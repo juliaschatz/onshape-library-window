@@ -1,0 +1,11 @@
+li {
+    list-style-type: none;
+    height: 3em;
+    text-align: center;
+}
+
+li:hover {
+    background-color: blue;
+    color: white;
+    cursor: pointer;
+}
