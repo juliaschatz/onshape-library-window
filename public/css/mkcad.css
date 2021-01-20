@@ -9,3 +9,8 @@ li:hover {
     color: white;
     cursor: pointer;
 }
+
+.doc-list {
+    height: 95vh;
+    overflow-y: scroll;
+}

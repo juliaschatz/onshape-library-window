@@ -34,78 +34,32 @@ $(document).ready(function() {
   console.log(theContext);
 
   var itemsList = $("#items-list");
-  itemsList.html("");
-
-  // Retrieve elements from MKCad
-  var sourceDID = "c867aae748085e5905211125"; // MKCad - Gearboxes
-  var sourceVID;
-  // Get latest version
-  $.ajax('/api/versions?documentId=' + sourceDID, {
-    dataType: 'json',
-    type: 'GET',
-    success: function(data) {
-      var latestVersionId = data[data.length - 1].id;
-      sourceVID = latestVersionId;
-      
-      $.ajax('/api/assemblies_version?documentId='+ sourceDID + '&versionId=' + latestVersionId, {
-        dataType: 'json',
-        type: 'GET',
-        success: function(assemblies) {
-          assemblies.forEach(asm => {
-            itemsList.append("<li class='insert-asm' data-doc='"+sourceDID+"' data-version='"+sourceVID+"' data-id='"+ asm.id + "'>" + asm.name + "</li>");
-          });
-
-          // Setup callbacks
-          $(".insert-asm").click(function() {
-            var asm_id = $(this).data("id");
-            var doc_id = $(this).data("doc");
-            var ver_id = $(this).data("version");
-            console.log("Trying to insert " + asm_id)
-            insertAssembly(doc_id, ver_id, asm_id);
-          });
+  // temporary hack, will be replaced by caching soon
+  $.ajax('/api/versions?documentId=' + theContext.documentId).then(() => {
+    $.ajax('/api/data').then((data) => {
+      console.log(data);
+      for (var i = 0; i < data.length; ++i) {
+        var item = data[i];
+        var h = '<li class="insert-item" data-ref="' + i + '">' + item.name + '</li>';
+        console.log(h);
+        $("#items-list").append(h);
+      }
+      $(".insert-item").click(function() {
+        var ref = parseInt($(this).data("ref"));
+        var item = data[ref];
+        if (item.type === "ASSEMBLY") {
+          insertAssembly(item.documentId, item.versionId, item.elementId);
+        }
+        else if (item.type === "PART") {
+          insertPart(item.documentId, item.versionId, item.elementId, item.partId);
         }
       });
-      /*
-      $.ajax('/api/partstudios_version?documentId='+ sourceDID + '&versionId=' + latestVersionId, {
-        dataType: 'json',
-        type: 'GET',
-        success: function(studios) {
-          studios.forEach(studio => {
-            $.ajax('/api/parts_studio?documentId='+ sourceDID + '&versionId=' + latestVersionId + '&elementId=' + studio.id, {
-              dataType: 'json',
-              type: 'GET',
-              success: function(parts) {
-                console.log("Studio " + studio.id + " has " + parts.length + " parts");
-                parts.forEach(part => {
-                  itemsList.append("<li class='insert-part' data-doc='"+sourceDID+"' data-version='"+sourceVID+"' data-element='"+studio.id+"' data-id='"+ part.id + "'>" + part.name +" " + studio.id + "</li>");
-                });
-      
-                // Setup callbacks
-                $(".insert-part[data-element='"+ studio.id + "']").click(function() {
-                  var part_id = $(this).data("id");
-                  var elem_id = $(this).data("element");
-                  var doc_id = $(this).data("doc");
-                  var ver_id = $(this).data("version");
-                  console.log("Trying to insert " + part_id)
-                  insertPart(doc_id, ver_id, elem_id, part_id);
-                });
-              }
-            });
-          });
-
-          
-        }
-      });*/
-
-      
-
-
-    }
+    });
   });
-});
+  });
 
 function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId) {
-  $.ajax('/api/insert_assembly?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
+  $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
   {
     method: "POST",
     contentType: "application/json; charset=utf-8",
@@ -128,16 +82,16 @@ function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId) {
 }
 
 function insertPart(sourceDocId, sourceVersionId, sourceElementId, sourcePartId) {
-  $.ajax('/api/insert_assembly?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
+  $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
   {
     method: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify({
       "documentId": sourceDocId,
       "elementId": sourceElementId,
-      "featureId": "",
       "isAssembly": false,
       "isWholePartStudio": false,
+      "isPart": true,
       "microversionId": "",
       "partId": sourcePartId,
       "versionId": sourceVersionId
