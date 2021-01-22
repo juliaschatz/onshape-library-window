@@ -33,16 +33,104 @@ $(document).ready(function() {
 
   console.log(theContext);
 
-  var itemsList = $("#items-list");
-  // temporary hack, will be replaced by caching soon
-  $.ajax('/api/versions?documentId=' + theContext.documentId).then(() => {
+  var itemsList = $("#insert-list");
+  var docList = $("#doc-list");
+  var adminList = $("#admin-list");
+  var itemsListContainer = $("#insert-list-container");
+  var docListContainer = $("#doc-list-container");
+  var adminListContainer = $("#admin-list-container");
+  var adminMenu = $("#admin-menu");
+  var adminStatus = $("#status");
+
+  var admin = false;
+  $("#toggle-view").click(function(evt) {
+    admin = !admin;
+    if (admin) {
+      docListContainer.show();
+      adminListContainer.show();
+      adminMenu.show();
+      itemsListContainer.hide();
+    }
+    else {
+      docListContainer.hide();
+      adminListContainer.hide();
+      adminMenu.hide();
+      itemsListContainer.show();
+    }
+  });
+
+  $.ajax('/api/isAdmin').then((data) => {
+    if (data.auth) {
+      $("#toggle-view").show();
+      $.ajax('/api/mkcadDocs').then((docs) => {
+        docs.forEach((doc) => {
+          var h = '<li class="view-doc" data-id="' + doc.id + '">' + doc.name + '</li>';
+          docList.append(h);
+        });
+        $(".view-doc").click(function() {
+          var id = $(this).data("id");
+          adminStatus.html("Loading...");
+          adminList.html("");
+          $.ajax('/api/documentData?documentId=' + id).then((items) => {
+            adminStatus.html("Document loaded.");
+            var i = 0;
+            items.forEach((item) => {
+              var val = "check-" + i;
+              var h = '<tr>' +
+                '<td><input type="checkbox" id="'+val+'" name="'+val+'" value="'+i+'" '+(item.visible?"checked":"")+'/></td>' +
+                '<td><label for="'+val+'">'+item.name+'</label></td>' + '</tr>';
+              adminList.append(h);
+              ++i;
+            });
+
+            $("#select-all").click(function() {
+              adminList.find("input[type=checkbox]").each(function() {
+                $(this).prop("checked", true);
+              });
+            });
+            $("#unselect-all").click(function() {
+              adminList.find("input[type=checkbox]").each(function() {
+                $(this).prop("checked", false);
+              });
+            });
+
+            $("#save").click(function() {
+              adminStatus.text("Saving...");
+              var newItems = [];
+              for (i = 0; i < items.length; ++i) {
+                var visible = $("input[name=check-"+i+"]").is(":checked");
+                if (visible) {
+                  items[i].visible = true;
+                  newItems.push(items[i]);
+                }
+              }
+              $.ajax('/api/saveDocumentData?documentId='+id, { 
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(newItems),
+                success: function() {
+                  adminStatus.text("Saved!");
+                }}).fail(function(err) {
+                  adminStatus.text("Failed to save");
+                  console.log(err);
+                });
+            });
+          });
+        });
+      });
+    }
+  }); 
+  $.ajax('/api/mkcadDocs').then((docList) => {
+    var docMap = {};
+    docList.forEach((doc) => {
+      docMap[doc.id] = doc.name;
+    });
     $.ajax('/api/data').then((data) => {
-      console.log(data);
       for (var i = 0; i < data.length; ++i) {
         var item = data[i];
         var h = '<li class="insert-item" data-ref="' + i + '">' + item.name + '</li>';
         console.log(h);
-        $("#items-list").append(h);
+        $("#insert-list").append(h);
       }
       $(".insert-item").click(function() {
         var ref = parseInt($(this).data("ref"));
@@ -54,9 +142,21 @@ $(document).ready(function() {
           insertPart(item.documentId, item.versionId, item.elementId, item.partId);
         }
       });
+      $("#insert-search").on('input', function() {
+        var text = $(this).val().toLowerCase();
+        itemsList.children().each(function() {
+          var thisText = $(this).text().toLowerCase();
+          if (thisText.includes(text)) {
+            $(this).show();
+          }
+          else {
+            $(this).hide();
+          }
+        });
+      });
     });
   });
-  });
+});
 
 function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId) {
   $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,

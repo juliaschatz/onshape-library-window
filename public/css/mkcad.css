@@ -10,7 +10,27 @@ li:hover {
     cursor: pointer;
 }
 
-.doc-list {
+body {
+    height:100%;
+    overflow:hidden;
+}
+
+.container {
+    overflow-y: auto;
+}
+
+#insert-list-container {
     height: 95vh;
-    overflow-y: scroll;
+}
+
+#doc-list-container {
+    height: 30vh;
+}
+
+#admin-list-container {
+    height: 63vh;
+}
+
+td {
+    padding: 0.5px;
 }

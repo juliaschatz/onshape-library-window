@@ -12,6 +12,7 @@ var https = require('https');
 var http = require('http');
 var uuid = require('uuid');
 var fs = require('fs');
+var storage = require('node-persist');
 
 
 var api = require('./routes/api');
@@ -30,7 +31,7 @@ if (process.env.REDISTOGO_URL) {
 }
 
 var app = express();
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({
   extended: true
 }));
@@ -44,6 +45,8 @@ app.listen = function () {
   }
 
 authentication.init();
+
+storage.init();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

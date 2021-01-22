@@ -19,9 +19,29 @@
   <script src="js/index.js"></script>
 
   <body>
-    <h1>MKCad</h1>
-    <ul id="items-list" class="doc-list">
+    <button id="toggle-view" style="display:none;">Toggle Admin View</button>
+    <div id="admin-menu" style="display:none;">
+      <button id="save">Save Document</button>
+      <span id="status"></span>
+    </div>
+    <div class="container" id="insert-list-container">
+      <input type="text" id="insert-search" placeholder="Search..." /><br/>
+      <ul id="insert-list" class="insert-list">
 
-    </ul>
+      </ul>
+    </div>
+    <div class="container" id="doc-list-container" style="display:none;">
+      <ul id="doc-list">
+
+      </ul>
+    </div>
+    <div class="container" id="admin-list-container" style="display:none;">
+      <button id="select-all">Select All</button><button id="unselect-all">Unselect All</button>
+      <table>
+        <tbody id="admin-list">
+
+        </tbody>
+      </table>
+    </div>
   </body>
 </html>
