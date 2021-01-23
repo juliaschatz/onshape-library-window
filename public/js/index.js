@@ -14,12 +14,12 @@ $(document).ready(function() {
   var url = window.location.href;
   console.log(url);
   var customQuery = url.split("#")[1].split("?")[0].split("/");
-  var stdQuery = url.split("?")[1];
+  /*var stdQuery = url.split("?")[1];
   stdQuery.split("&").forEach(s => {
     var name = s.split("=")[0];
     var value = s.split("=")[1];
     theContext[name] = value;
-  });
+  });*/
 
   theContext.type = customQuery[0];
   theContext.documentId = customQuery[1];
@@ -76,10 +76,24 @@ $(document).ready(function() {
             var i = 0;
             items.forEach((item) => {
               var val = "check-" + i;
+              let thisnum = i;
               var h = '<tr>' +
                 '<td><input type="checkbox" id="'+val+'" name="'+val+'" value="'+i+'" '+(item.visible?"checked":"")+'/></td>' +
-                '<td><label for="'+val+'">'+item.name+'</label></td>' + '</tr>';
+                '<td><img class="thumb admin" data-ref="'+i+'" src=""/></td>' + 
+                '<td><label for="'+val+'">'+item.name+'</label></td>' + 
+                '</tr>';
               adminList.append(h);
+              var targetUrl;
+              if (item.type === "ASSEMBLY") {
+                targetUrl = "/api/assemThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId;
+              }
+              else if (item.type === "PART") {
+                targetUrl = "/api/partThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId + "&partId=" + item.partId;
+              }
+              $.get(targetUrl).then((thumb) => {
+                $('img.thumb.admin[data-ref='+thisnum+']').attr("src", "data:image/jpeg;base64," + thumb);
+              });
+              
               ++i;
             });
 
@@ -124,13 +138,26 @@ $(document).ready(function() {
     var docMap = {};
     docList.forEach((doc) => {
       docMap[doc.id] = doc.name;
+      itemsList.append('<li class="doc-folder"><span class="folder-title">'+doc.name+'</span><ul class="folder" data-id="'+doc.id+'"></ul></li>');
+
     });
     $.ajax('/api/data').then((data) => {
       for (var i = 0; i < data.length; ++i) {
         var item = data[i];
-        var h = '<li class="insert-item" data-ref="' + i + '">' + item.name + '</li>';
-        console.log(h);
-        $("#insert-list").append(h);
+        var h = '<li class="insert-item" data-ref="' + i + '"><img data-ref="'+i+'" class="thumb user" src=""/>' + item.name + '</li>';
+        $("ul.folder[data-id=" + item.documentId +"]").append(h);
+        var targetUrl;
+        if (item.type === "ASSEMBLY") {
+          targetUrl = "/api/assemThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId;
+        }
+        else if (item.type === "PART") {
+          targetUrl = "/api/partThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId + "&partId=" + item.partId;
+        }
+        let thisnum = i;
+        $.get(targetUrl).then((thumb) => {
+          $("img.thumb.user[data-ref="+thisnum+"]").attr("src", "data:image/jpeg;base64," + thumb);
+        });
+        
       }
       $(".insert-item").click(function() {
         var ref = parseInt($(this).data("ref"));
@@ -144,7 +171,7 @@ $(document).ready(function() {
       });
       $("#insert-search").on('input', function() {
         var text = $(this).val().toLowerCase();
-        itemsList.children().each(function() {
+        itemsList.find("li.insert-item").each(function() {
           var thisText = $(this).text().toLowerCase();
           if (thisText.includes(text)) {
             $(this).show();

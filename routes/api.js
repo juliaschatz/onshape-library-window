@@ -9,6 +9,7 @@ var url = require('url');
 var storage = require('node-persist');
 const { version } = require('os');
 const passport = require('passport');
+const NodeCache = require( "node-cache" );
 
 var  apiUrl = 'https://cad.onshape.com';
 var localUrl = 'https://mkcad.julias.ch/api';
@@ -33,20 +34,7 @@ if (process.env.REDISTOGO_URL) {
   client = redis.createClient();
 }
 
-// Simple route middleware to ensure user is authenticated.
-//   Use this route middleware on any resource that needs to be protected.  If
-//   the request is authenticated (typically via a persistent login session),
-//   the request will proceed.  Otherwise, the user will be redirected to the
-//   login page.
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next()
-  }
-  res.status(401).send({
-    authUri: authentication.getAuthUri(),
-    msg: 'Authentication required.'
-  });
-}
+const myCache = new NodeCache({stdTTL: 3600, checkperiod: 600});
 
 router.sendNotify = function(req, res) {
   if (req.body.event == 'onshape.model.lifecycle.changed') {
@@ -70,35 +58,38 @@ router.post('/logout', function(req, res) {
 
 function makeAPICall(req, res, endpoint, method, nosend) {
   var targetUrl = apiUrl + endpoint;
-  var promise = method({
-    uri: targetUrl,
-    json: true,
-    body: req.body,
-    headers: {
-      'Authorization': 'Bearer ' + req.user.accessToken
-    }
-  }).catch((data) => {
-    console.log("CATCH " + data.statusCode);
-    if (data.statusCode === 401) {
-      authentication.refreshOAuthToken(req, res).then(function() {
-        return makeAPICall(req, res, endpoint, method, nosend);
-      }).catch(function(err) {
-        console.log('Error refreshing token: ', err);
-      });
-    } else {
-      console.log('Error: ', data);
-    }
-  });
-  if (nosend) {
-    return promise;
-  }
-  else {
-    promise.then((data) => {
+  return new Promise((resolve, reject) => {
+    method({
+      uri: targetUrl,
+      json: true,
+      body: req.body,
+      headers: {
+        'Authorization': 'Bearer ' + req.user.accessToken
+      }
+    }).catch((data) => {
+      console.log("CATCH " + data.statusCode);
+      if (data.statusCode === 401) {
+        authentication.refreshOAuthToken(req, res).then(function() {
+          makeAPICall(req, res, endpoint, method, nosend).then((data) => {
+            resolve(data);
+          }).catch((data) => {
+            reject(data);
+          });
+        }).catch(function(err) {
+          console.log('Error refreshing token: ', err);
+          reject();
+        });
+      } else {
+        console.log('Error: ', data.statusCode);
+        reject(data);
+      }
+    }).then((data) => {
       if (!nosend) {
         res.send(data);
       }
+      resolve(data);
     });
-  }
+  });
 }
 
 var mkcadDocs = [
@@ -114,7 +105,7 @@ var mkcadDocs = [
   {id: "92ef235726d5987b44918f0f", name: "Gears"},
   {id: "a649b1465060ffc7ed51867c", name: "Gears (Configurable)"},
   {id: "c2a381dccb443d1ba020579d", name: "Gussets & Brackets"},
-  {id: "c2a381dccb443d1ba020579d", name: "Hubs"},
+  {id: "264a272835dc33c2301ab854", name: "Hubs"},
   {id: "762fca97a6ea961cdb515adc", name: "KOP Chassis (Configurable)"},
   {id: "b408248c9b853832dd903b35", name: "Minimal Versaplanetary"},
   {id: "2979144bb1e87ddd1747e172", name: "Motors"},
@@ -155,7 +146,6 @@ function checkAuth(id) {
     client.get("mkcad" + id, function(getError, data) {
       if (getError) throw getError;
 
-      console.log("Response to session " + id + " is " + data)
       if (data !== null && data) {
         resolve();
       }
@@ -208,7 +198,6 @@ function documentData(req, res) {
       };
       var versionPromise = getVersionsRaw(versionReq, res).then((versions) => {
         var versionId = versions[versions.length - 1].id;
-        console.log("Latest version: " + versionId);
         // Collect assemblies and part studios
         eMetaReq = req;
         eMetaReq.query = {
@@ -219,7 +208,6 @@ function documentData(req, res) {
           var elementsLeft = metadataResult.items.length;
           var decreaseElements = function() {
             elementsLeft--;
-            console.log(elementsLeft);
             if (elementsLeft === 0) {
               res.send(insertable_data);
             }
@@ -238,7 +226,7 @@ function documentData(req, res) {
                 visible: isVisible(metaItem.elementId)
               });
               
-              decreaseElements();
+              decreaseElements();            
             }
             else if (metaItem.elementType === META.PARTSTUDIO) {
               // Part studio: Check each item in studio
@@ -253,6 +241,7 @@ function documentData(req, res) {
                   decreaseElements();
                   return;
                 }
+                var partsLeft = itemMetaResult.items.length;
                 itemMetaResult.items.forEach((itemMeta) => {
                   var name = getName(itemMeta);
                   insertable_data.push({
@@ -264,9 +253,11 @@ function documentData(req, res) {
                     documentId: documentId,
                     visible: isVisible(metaItem.elementId, itemMeta.partId)
                   });
-                  
+                  partsLeft--;
+                  if (partsLeft === 0) {
+                    decreaseElements();
+                  }
                 });
-                decreaseElements();
               }); // part meta promise
             } 
             else { // All non-part studio non-assemblies
@@ -311,7 +302,6 @@ function getUserIsMKCadAdmin(req, res) {
     }
   }).then((data) => {
     client.set("mkcad" + req.user.id, true);
-    console.log("Set admin session " + req.user.id)
     res.send({auth: true});
   }).catch((data) => {
     console.log("CATCH " + data.statusCode);
@@ -363,33 +353,104 @@ router.get('/elements', getElements);
 router.get('/elements_metadata', getElementsMetadata);
 router.get('/parts_metadata', getPartsMetadata);
 // Thumbnails
-var thumbView = "0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0"; // Isometric view
+var thumbView = "0.612,0.612,0,0,"+
+                "-0.354,0.354,0.707,0," +
+                "0.707,-0.707,0.707,0"; // Isometric view
 var thumbPixelSize = 0.003; // meters per pixel
 var thumbHeight = 250;
 var thumbWidth = 250;
-router.get('/part_thumb', (req, res) => {
-  req.query.data = JSON.stringify({
-    viewMatrix: thumbView,
-    pixelSize: thumbPixelSize,
-    outputHeight: thumbHeight,
-    outputWidth: thumbWidth
+
+function makeThumbView(boundingBox) {
+  if (boundingBox === undefined) {
+    return thumbView;
+  }
+  var xCenter = (boundingBox.highX + boundingBox.lowX) / 2;
+  var yCenter = (boundingBox.highY + boundingBox.lowY) / 2;
+  var zCenter = (boundingBox.highZ + boundingBox.lowZ) / 2;
+
+  var tX = (xCenter * 0.707 + yCenter * 0.707 + zCenter * 0);
+  var tY = (xCenter * -0.409 + yCenter * 0.409 + zCenter * 0.816);
+  var tZ = (xCenter * 0.577 + yCenter * -0.577 + zCenter * 0.577);
+
+  var sizeX = boundingBox.highX - boundingBox.lowX;
+  var sizeY = boundingBox.highY - boundingBox.lowY;
+  var sizeZ = boundingBox.highZ - boundingBox.lowZ;
+  var size = Math.sqrt(sizeX*sizeX + sizeY*sizeY + sizeZ*sizeZ) * 1.2;
+
+  return {view: "0.612,0.612,0," + (-tX) + ",-0.354,0.354,0.707, " + (-tY) + ",0.707,-0.707,0.707," + (-tZ), size: size};
+}
+
+var getAssemBBRaw = function(req, res) {
+  return makeAPICall(req, res, '/api/assemblies/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/boundingboxes', request.get, true);
+}
+var getPartBBRaw = function(req, res) {
+  return makeAPICall(req, res, '/api/parts/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/partid/' + req.query.partId + '/boundingboxes', request.get, true);
+}
+
+var getAssemThumbRaw = function(req, res) {
+  var viewMatrix = req.query.thumbView;
+  var thumbPixelSize = req.query.size / thumbHeight;
+  return makeAPICall(req, res, '/api/assemblies/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true);
+}
+var getPartThumbRaw = function(req, res) {
+  var viewMatrix = req.query.thumbView;
+  var thumbPixelSize = req.query.size / thumbHeight;
+  return makeAPICall(req, res, '/api/parts/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/partid/' + req.query.partId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true);
+}
+
+var getPartThumb = function(req, res) {
+  var key = "thumb"+ req.query.documentId + "/" +req.query.versionId + "/" + req.query.elementId + "/" + req.query.partId;
+  var cached = myCache.get(key);
+  if (cached) {
+    res.send(cached);
+  }
+  else {
+    getPartBBRaw(req, res).then((bb) => {
+      var view = makeThumbView(bb);
+      var viewMatrix = view.view;
+      var thumbPixelSize = view.size / thumbHeight;
+      makeAPICall(req, res, '/api/parts/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/partid/' + req.query.partId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true).then((data) => {
+        var thumb = data.images[0];
+        myCache.set(key, thumb);
+        res.send(thumb);
+      }).catch(() => {
+        res.status(404).send();
+      });
+    }).catch(() => {
+      res.status(404).send();
+    });
+  }
+}
+
+var getAssemThumb = function(req, res) {
+  var key = "thumb"+ req.query.documentId + "/" +req.query.versionId + "/" + req.query.elementId;
+  var cached = myCache.get(key);
+  if (cached) {
+    res.send(cached);
+  }
+  getAssemBBRaw(req, res).then((bb) => {
+    var view = makeThumbView(bb);
+    var viewMatrix = view.view;
+    var thumbPixelSize = view.size / thumbHeight;
+    makeAPICall(req, res, '/api/assemblies/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true).then((data) => {
+      var thumb = data.images[0];
+      myCache.set(key, thumb);
+      res.send(thumb);
+    }).catch(() => {
+      res.status(404).send();
+    });
+  }).catch(() => {
+    res.status(404).send();
   });
-  makeAPICall(req, res, '/parts/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/partid/' + req.query.partId + '/shadedviews', request.get);
-});
-router.get('/assembly_thumb', (req, res) => {
-  req.query.data = JSON.stringify({
-    viewMatrix: thumbView,
-    pixelSize: thumbPixelSize,
-    outputHeight: thumbHeight,
-    outputWidth: thumbWidth
-  });
-  makeAPICall(req, res, '/assemblies/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/shadedviews', request.get);
-});
+}
+
 // Non-passthrough API
 router.get('/data', getMKCadData);
 router.get('/documentData', documentData);
 router.post('/saveDocumentData', saveDocumentData);
 router.get('/isAdmin', getUserIsMKCadAdmin);
 router.get('/mkcadDocs', documentList);
+router.get('/partThumb', getPartThumb);
+router.get('/assemThumb', getAssemThumb);
 
 module.exports = router;

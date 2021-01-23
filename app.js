@@ -77,9 +77,21 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Simple route middleware to ensure user is authenticated.
+//   Use this route middleware on any resource that needs to be protected.  If
+//   the request is authenticated (typically via a persistent login session),
+//   the request will proceed.  Otherwise, the user will be redirected to the
+//   login page.
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next()
+  }
+  res.status(401).redirect('/oauthRedirect');
+}
+
 app.use('/api', api);
 
-app.get('/', index.renderPage);
+app.get('/', ensureAuthenticated, index.renderPage);
 app.post('/notify', api.sendNotify);
 app.get('/grantDenied', index.grantDenied);
 
@@ -107,7 +119,7 @@ function storeExtraParams(req, res) {
   };
 
   var stateString = JSON.stringify(state);
-  var uniqueID = "state" + passport.session();
+  var uniqueID = "state" + req.user.id;
   client.set(uniqueID, stateString);
 
   return passport.authenticate("onshape")(req, res);
@@ -121,10 +133,12 @@ function storeExtraParams(req, res) {
 app.use('/oauthRedirect',
     passport.authenticate('onshape', { failureRedirect: '/grantDenied' }),
     function(req, res) {
-      var uniqueID = "state" + passport.session();
+      var uniqueID = "state" + req.user.id;
       client.get(uniqueID, function(err, reply) {
+        console.log(reply);
         // reply is null when the key is missing
         if (reply != null) {
+          
           var newParams = JSON.parse(reply);
           var url = '/?' + 'documentId=' + newParams.documentId + '&workspaceId=' + newParams.workspaceId + '&elementId=' + newParams.elementId;
           res.redirect(url);
