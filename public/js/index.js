@@ -41,27 +41,33 @@ $(document).ready(function() {
   var adminListContainer = $("#admin-list-container");
   var adminMenu = $("#admin-menu");
   var adminStatus = $("#status");
+  var adminButton = $("#toggle-view");
+  let searchbar = $("#insert-search");
+  let clearSearch = $("#clear-search");
 
   var admin = false;
-  $("#toggle-view").click(function(evt) {
+  adminButton.click(function(evt) {
     admin = !admin;
+    clearSearch.click();
     if (admin) {
       docListContainer.show();
       adminListContainer.show();
       adminMenu.show();
       itemsListContainer.hide();
+      adminButton.text("User");
     }
     else {
       docListContainer.hide();
       adminListContainer.hide();
       adminMenu.hide();
       itemsListContainer.show();
+      adminButton.text("Admin");
     }
   });
 
   $.ajax('/api/isAdmin').then((data) => {
     if (data.auth) {
-      $("#toggle-view").show();
+      adminButton.show();
       $.ajax('/api/mkcadDocs').then((docs) => {
         docs.forEach((doc) => {
           var h = '<li class="view-doc" data-id="' + doc.id + '">' + doc.name + '</li>';
@@ -77,7 +83,7 @@ $(document).ready(function() {
             items.forEach((item) => {
               var val = "check-" + i;
               let thisnum = i;
-              var h = '<tr>' +
+              var h = '<tr class="admin-item">' +
                 '<td><input type="checkbox" id="'+val+'" name="'+val+'" value="'+i+'" '+(item.visible?"checked":"")+'/></td>' +
                 '<td><img class="thumb admin" data-ref="'+i+'" src=""/></td>' + 
                 '<td><label for="'+val+'">'+item.name+'</label></td>' + 
@@ -138,8 +144,11 @@ $(document).ready(function() {
     var docMap = {};
     docList.forEach((doc) => {
       docMap[doc.id] = doc.name;
-      itemsList.append('<li class="doc-folder"><span class="folder-title">'+doc.name+'</span><ul class="folder" data-id="'+doc.id+'"></ul></li>');
+      itemsList.append('<li class="doc-folder"><span class="folder-title">'+doc.name+'</span><ul style="display:none;" class="folder" data-id="'+doc.id+'"></ul></li>');
 
+    });
+    $(".folder-title").click(function() {
+      $(this).siblings("ul").toggle();
     });
     $.ajax('/api/data').then((data) => {
       for (var i = 0; i < data.length; ++i) {
@@ -169,17 +178,51 @@ $(document).ready(function() {
           insertPart(item.documentId, item.versionId, item.elementId, item.partId);
         }
       });
-      $("#insert-search").on('input', function() {
+
+      clearSearch.click(function() {
+        searchbar.val("");
+        searchbar.trigger("input");
+      })
+      searchbar.on('input', function() {
         var text = $(this).val().toLowerCase();
-        itemsList.find("li.insert-item").each(function() {
-          var thisText = $(this).text().toLowerCase();
-          if (thisText.includes(text)) {
-            $(this).show();
-          }
-          else {
-            $(this).hide();
-          }
-        });
+
+        if (admin) {
+          $("tr.admin-item").each(function() {
+            let thisText = $(this).children(":eq(2)").text().toLowerCase();
+            if (thisText.includes(text)) {
+              $(this).show();
+            }
+            else {
+              $(this).hide();
+            }
+          });
+        }
+        else {
+          $("li.doc-folder").each(function() {
+            let anyVisible = false;
+            $(this).find("li.insert-item").each(function() {
+              var thisText = $(this).text().toLowerCase();
+              if (thisText.includes(text)) {
+                $(this).show();
+                anyVisible = true;
+              }
+              else {
+                $(this).hide();
+              }
+            });
+            if (anyVisible) {
+              $(this).show();
+              $(this).children("ul").show();
+            }
+            else {
+              $(this).hide();
+              $(this).children("ul").hide();
+            }
+            if (text === "") {
+              $(this).children("ul").hide();
+            }
+          });
+        }
       });
     });
   });

@@ -36,6 +36,8 @@ body {
 
 #doc-list-container {
     height: 30vh;
+    border-bottom: 2px solid black;
+    border-top: 2px solid black;
 }
 
 #admin-list-container {
@@ -54,4 +56,15 @@ td {
     display: block;
     width: 100%;
     margin-top: 1em;
+    cursor: pointer;
+}
+
+#menu {
+    display: flex;
+}
+
+.searchbar {
+    width: 90%;
+    padding: 0.4em;
+    flex-grow: 1;
 }

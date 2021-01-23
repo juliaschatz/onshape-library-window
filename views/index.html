@@ -19,13 +19,17 @@
   <script src="js/index.js"></script>
 
   <body>
-    <button id="toggle-view" style="display:none;">Toggle Admin View</button>
+    <div id="menu">
+      <button id="clear-search">X</button> 
+      <input class="searchbar" type="text" id="insert-search" placeholder="Search..." />
+      <button id="toggle-view" style="display:none;">Admin</button>
+    </div>
+    
     <div id="admin-menu" style="display:none;">
       <button id="save">Save Document</button>
       <span id="status"></span>
     </div>
     <div class="container" id="insert-list-container">
-      <input type="text" id="insert-search" placeholder="Search..." /><br/>
       <ul id="insert-list" class="insert-list">
 
       </ul>
