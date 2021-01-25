@@ -12,7 +12,6 @@ $(document).ready(function() {
   // retrieve the query params
   var theQuery = $.getQuery();
   var url = window.location.href;
-  console.log(url);
   var customQuery = url.split("#")[1].split("?")[0].split("/");
   /*var stdQuery = url.split("?")[1];
   stdQuery.split("&").forEach(s => {
@@ -30,8 +29,6 @@ $(document).ready(function() {
   // Hold onto the current session information
   theContext.verison = 0;
   theContext.microversion = 0;
-
-  console.log(theContext);
 
   var itemsList = $("#insert-list");
   var docList = $("#doc-list");
@@ -73,18 +70,35 @@ $(document).ready(function() {
           var h = '<li class="view-doc" data-id="' + doc.id + '">' + doc.name + '</li>';
           docList.append(h);
         });
+
+        $("#select-all").click(function() {
+          adminList.find("input[type=checkbox]").each(function() {
+            $(this).prop("checked", true);
+          });
+        });
+        $("#unselect-all").click(function() {
+          adminList.find("input[type=checkbox]").each(function() {
+            $(this).prop("checked", false);
+          });
+        });
+
         $(".view-doc").click(function() {
-          var id = $(this).data("id");
+          let id = $(this).data("id");
           adminStatus.html("Loading...");
           adminList.html("");
           $.ajax('/api/documentData?documentId=' + id).then((items) => {
             adminStatus.html("Document loaded.");
+
+            items.sort(function(a,b) {
+              return a.name.localeCompare(b.name);
+            });
+
             var i = 0;
             items.forEach((item) => {
               var val = "check-" + i;
               let thisnum = i;
               var h = '<tr class="admin-item">' +
-                '<td><input type="checkbox" id="'+val+'" name="'+val+'" value="'+i+'" '+(item.visible?"checked":"")+'/></td>' +
+                '<td><input data-doc="'+id+'" type="checkbox" id="'+val+'" name="'+val+'" value="'+i+'" '+(item.visible?"checked":"")+'/></td>' +
                 '<td><img class="thumb admin" data-ref="'+i+'" src=""/></td>' + 
                 '<td><label for="'+val+'">'+item.name+'</label></td>' + 
                 '</tr>';
@@ -103,22 +117,13 @@ $(document).ready(function() {
               ++i;
             });
 
-            $("#select-all").click(function() {
-              adminList.find("input[type=checkbox]").each(function() {
-                $(this).prop("checked", true);
-              });
-            });
-            $("#unselect-all").click(function() {
-              adminList.find("input[type=checkbox]").each(function() {
-                $(this).prop("checked", false);
-              });
-            });
-
+            $("#save").unbind("click");
             $("#save").click(function() {
               adminStatus.text("Saving...");
               var newItems = [];
-              for (i = 0; i < items.length; ++i) {
-                var visible = $("input[name=check-"+i+"]").is(":checked");
+              for (let i = 0; i < items.length; ++i) {
+                
+                var visible = $('input[data-doc="' + id + '"]').filter("#check-"+i).is(":checked");
                 if (visible) {
                   items[i].visible = true;
                   newItems.push(items[i]);
@@ -153,7 +158,7 @@ $(document).ready(function() {
     $.ajax('/api/data').then((data) => {
       for (var i = 0; i < data.length; ++i) {
         var item = data[i];
-        var h = '<li class="insert-item" data-ref="' + i + '"><img data-ref="'+i+'" class="thumb user" src=""/>' + item.name + '</li>';
+        var h = '<li class="insert-item" data-ref="' + i + '"><img data-ref="'+i+'" class="thumb user" src=""/><span class="item-name">' + item.name + '</li>';
         $("ul.folder[data-id=" + item.documentId +"]").append(h);
         var targetUrl;
         if (item.type === "ASSEMBLY") {
@@ -201,7 +206,7 @@ $(document).ready(function() {
           $("li.doc-folder").each(function() {
             let anyVisible = false;
             $(this).find("li.insert-item").each(function() {
-              var thisText = $(this).text().toLowerCase();
+              var thisText = $(this).children("span").text().toLowerCase();
               if (thisText.includes(text)) {
                 $(this).show();
                 anyVisible = true;

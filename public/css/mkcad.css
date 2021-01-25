@@ -10,6 +10,10 @@ ul {
     padding-left: 1em;
 }
 
+.thumb {
+    float:left;
+}
+
 .insert-item:hover {
     background-color: blue;
     color: white;
