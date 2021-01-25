@@ -105,8 +105,19 @@ $(document).ready(function() {
                   '<td><label for="'+val+'">'+item.name+'</label></td>' + 
                   '</tr>';
                 adminList.append(h);
-                getThumb(item, $('img.thumb.admin[data-ref='+thisnum+']'));              
+                item.ref = i;              
                 ++i;
+              });
+              $.ajax({
+                url: '/api/thumbs',
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(items),
+                success: function(data) {
+                  data.forEach((item) => {
+                    $('img.thumb.admin[data-ref='+item.ref+']').attr("src", "data:image/png;base64," + item.thumb);
+                  });
+                }
               });
   
               $("#save").unbind("click");
@@ -160,9 +171,19 @@ $(document).ready(function() {
         var item = data[i];
         var h = '<li class="insert-item" data-ref="' + i + '"><img data-ref="'+i+'" class="thumb user" src=""/><span class="item-name">' + item.name + '</li>';
         $("ul.folder[data-id=" + item.documentId +"]").append(h);
-        getThumb(item, $("img.thumb.user[data-ref="+i+"]"));
-        
+        item.ref = i;
       }
+      $.ajax({
+        url: '/api/thumbs',
+        method: "POST",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(data),
+        success: function(data) {
+          data.forEach((item) => {
+            $('img.thumb.user[data-ref='+item.ref+']').attr("src", "data:image/png;base64," + item.thumb);
+          });
+        }
+      });
       $(".insert-item").click(function() {
         var ref = parseInt($(this).data("ref"));
         var item = data[ref];

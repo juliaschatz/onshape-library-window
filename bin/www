@@ -1,7 +1,30 @@
 #!/usr/bin/env node
-var app = require('../app');
 
-app.set('port', 443);
+var cluster = require('cluster');
 
-var server = app.listen(app.get('port'), function() {
-});
+if(cluster.isMaster) {
+    var numWorkers = require('os').cpus().length;
+    var numWorkers = 4;
+
+    console.log('Master cluster setting up ' + numWorkers + ' workers...');
+
+    for(var i = 0; i < numWorkers; i++) {
+        cluster.fork();
+    }
+
+    cluster.on('online', function(worker) {
+        console.log('Worker ' + worker.process.pid + ' is online');
+    });
+
+    cluster.on('exit', function(worker, code, signal) {
+        console.log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
+        console.log('Starting a new worker');
+        cluster.fork();
+    });
+} else {
+    var app = require('../app');
+
+    app.set('port', 443);
+
+    var server = app.listen(app.get('port'), function() {});
+}

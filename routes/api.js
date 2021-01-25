@@ -356,9 +356,9 @@ router.get('/parts_metadata', getPartsMetadata);
 var thumbView = "0.612,0.612,0,0,"+
                 "-0.354,0.354,0.707,0," +
                 "0.707,-0.707,0.707,0"; // Isometric view
-var thumbPixelSize = 0.003; // meters per pixel
-var thumbHeight = 250;
-var thumbWidth = 250;
+
+var thumbHeight = 42;
+var thumbWidth = 42;
 
 function makeThumbView(boundingBox) {
   if (boundingBox === undefined) {
@@ -460,6 +460,68 @@ var getAssemThumb = function(req, res) {
   });
 }
 
+var getThumbs = function(req, res) {
+  var response = [];
+  var items = req.body;
+  var counter = items.length;
+  function decreaseCount() {
+    --counter;
+    if (counter === 0) {
+      res.send(response);
+    }
+  }
+
+  function fetchThumb(item, key) {
+    var bbEndpoint;
+    var viewsEndpoint;
+    if (item.type === "ASSEMBLY") {
+      bbEndpoint = '/api/assemblies/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/boundingboxes';
+      viewsEndpoint = '/api/assemblies/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/shadedviews';
+    }
+    else {
+      bbEndpoint = '/api/parts/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/partid/' + item.partId + '/boundingboxes';
+      viewsEndpoint = '/api/parts/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/partid/' + item.partId + '/shadedviews';
+    }
+
+    makeAPICall(req, res, bbEndpoint, request.get, true).then((bb) => {
+      var view = makeThumbView(bb);
+      var viewMatrix = view.view;
+      var thumbPixelSize = view.size / thumbHeight;
+      makeAPICall(req, res, viewsEndpoint + '?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true).then((data) => {
+        var thumb = data.images[0];
+        storage.set(key, thumb);
+        item.thumb = thumb;
+        response.push(item);
+        decreaseCounter();
+      }).catch(() => {
+        decreaseCounter();
+      });
+    }).catch(() => {
+      decreaseCounter();
+    });
+  }
+
+  items.forEach((item) => {
+    var key;
+    if (item.type === "ASSEMBLY") {
+      key = "thumb"+ item.documentId + "/" +item.versionId + "/" + item.elementId;
+    }
+    else {
+      key = "thumb"+ item.documentId + "/" +item.versionId + "/" + item.elementId + "/" + item.partId;
+    }
+    storage.get(key).then((cached) => {
+      if (cached === null) {
+        fetchThumb(item, key);
+      }
+      else {
+        item.thumb = cached;
+        response.push(item);
+        decreaseCount();
+      }
+    })
+  });
+}
+
 // Non-passthrough API
 router.get('/data', getMKCadData);
 router.get('/documentData', documentData);
@@ -468,5 +530,6 @@ router.get('/isAdmin', getUserIsMKCadAdmin);
 router.get('/mkcadDocs', documentList);
 router.get('/partThumb', getPartThumb);
 router.get('/assemThumb', getAssemThumb);
+router.post('/thumbs', getThumbs);
 
 module.exports = router;
