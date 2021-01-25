@@ -69,9 +69,13 @@ app.use(session({
   store: new RedisStore({
     'client': client
   }),
-  secret: 'app-bom',
+  secret: 'mkcad',
   saveUninitialized: false,
-  resave: false
+  resave: false,
+  cookie: {
+    secure: true,
+    sameSite: 'none'
+  }
 }));
 
 app.use(passport.initialize());
@@ -84,6 +88,7 @@ app.use(passport.session());
 //   login page.
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
+    res.status(200);
     return next()
   }
   res.status(401).redirect('/oauthRedirect');
@@ -119,7 +124,7 @@ function storeExtraParams(req, res) {
   };
 
   var stateString = JSON.stringify(state);
-  var uniqueID = "state" + req.user.id;
+  var uniqueID = "state" + passport.session();
   client.set(uniqueID, stateString);
 
   return passport.authenticate("onshape")(req, res);
@@ -133,7 +138,7 @@ function storeExtraParams(req, res) {
 app.use('/oauthRedirect',
     passport.authenticate('onshape', { failureRedirect: '/grantDenied' }),
     function(req, res) {
-      var uniqueID = "state" + req.user.id;
+      var uniqueID = "state" + passport.session();
       client.get(uniqueID, function(err, reply) {
         console.log(reply);
         // reply is null when the key is missing

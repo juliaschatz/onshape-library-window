@@ -105,17 +105,7 @@ $(document).ready(function() {
                 '<td><label for="'+val+'">'+item.name+'</label></td>' + 
                 '</tr>';
               adminList.append(h);
-              var targetUrl;
-              if (item.type === "ASSEMBLY") {
-                targetUrl = "/api/assemThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId;
-              }
-              else if (item.type === "PART") {
-                targetUrl = "/api/partThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId + "&partId=" + item.partId;
-              }
-              $.get(targetUrl).then((thumb) => {
-                $('img.thumb.admin[data-ref='+thisnum+']').attr("src", "data:image/png;base64," + thumb);
-              });
-              
+              getThumb(item, $('img.thumb.admin[data-ref='+thisnum+']'));              
               ++i;
             });
 
@@ -162,17 +152,7 @@ $(document).ready(function() {
         var item = data[i];
         var h = '<li class="insert-item" data-ref="' + i + '"><img data-ref="'+i+'" class="thumb user" src=""/><span class="item-name">' + item.name + '</li>';
         $("ul.folder[data-id=" + item.documentId +"]").append(h);
-        var targetUrl;
-        if (item.type === "ASSEMBLY") {
-          targetUrl = "/api/assemThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId;
-        }
-        else if (item.type === "PART") {
-          targetUrl = "/api/partThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId + "&partId=" + item.partId;
-        }
-        let thisnum = i;
-        $.get(targetUrl).then((thumb) => {
-          $("img.thumb.user[data-ref="+thisnum+"]").attr("src", "data:image/jpeg;base64," + thumb);
-        });
+        getThumb(item, $("img.thumb.user[data-ref="+i+"]"));
         
       }
       $(".insert-item").click(function() {
@@ -234,6 +214,21 @@ $(document).ready(function() {
     });
   });
 });
+
+function getThumb(item, element) {
+  var targetUrl;
+  if (item.type === "ASSEMBLY") {
+    targetUrl = "/api/assemThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId;
+  }
+  else if (item.type === "PART") {
+    targetUrl = "/api/partThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId + "&partId=" + item.partId;
+  }
+
+  var setThumb = (thumb) => {
+    element.attr("src", "data:image/jpeg;base64," + thumb);
+  }
+  $.get(targetUrl).then(setThumb);
+}
 
 function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId) {
   $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
