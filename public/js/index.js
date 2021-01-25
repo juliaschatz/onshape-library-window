@@ -11,8 +11,6 @@ $(document).ready(function() {
 
   // retrieve the query params
   var theQuery = $.getQuery();
-  var url = window.location.href;
-  var customQuery = url.split("#")[1].split("?")[0].split("/");
   /*var stdQuery = url.split("?")[1];
   stdQuery.split("&").forEach(s => {
     var name = s.split("=")[0];
@@ -20,11 +18,11 @@ $(document).ready(function() {
     theContext[name] = value;
   });*/
 
-  theContext.type = customQuery[0];
-  theContext.documentId = customQuery[1];
-  theContext.workspaceOrVersion = customQuery[2];
-  theContext.wvId = customQuery[3];
-  theContext.elementId = customQuery[4];
+  theContext.type = theQuery.type;
+  theContext.documentId = theQuery.docId;
+  theContext.workspaceOrVersion = theQuery.wvm;
+  theContext.wvId = theQuery.wvmId;
+  theContext.elementId = theQuery.eId;
 
   // Hold onto the current session information
   theContext.verison = 0;
@@ -62,81 +60,91 @@ $(document).ready(function() {
     }
   });
 
-  $.ajax('/api/isAdmin').then((data) => {
-    if (data.auth) {
-      adminButton.show();
-      $.ajax('/api/mkcadDocs').then((docs) => {
-        docs.forEach((doc) => {
-          var h = '<li class="view-doc" data-id="' + doc.id + '">' + doc.name + '</li>';
-          docList.append(h);
-        });
-
-        $("#select-all").click(function() {
-          adminList.find("input[type=checkbox]").each(function() {
-            $(this).prop("checked", true);
+  $.ajax({
+    url: '/api/isAdmin',
+    success: function(data) {
+      if (data.auth) {
+        adminButton.show();
+        $.ajax('/api/mkcadDocs').then((docs) => {
+          docs.forEach((doc) => {
+            var h = '<li class="view-doc" data-id="' + doc.id + '">' + doc.name + '</li>';
+            docList.append(h);
           });
-        });
-        $("#unselect-all").click(function() {
-          adminList.find("input[type=checkbox]").each(function() {
-            $(this).prop("checked", false);
+  
+          $("#select-all").click(function() {
+            adminList.find("input[type=checkbox]").each(function() {
+              $(this).prop("checked", true);
+            });
           });
-        });
-
-        $(".view-doc").click(function() {
-          let id = $(this).data("id");
-          adminStatus.html("Loading...");
-          adminList.html("");
-          clearSearch.click();
-          $.ajax('/api/documentData?documentId=' + id).then((items) => {
-            adminStatus.html("Document loaded.");
-
-            items.sort(function(a,b) {
-              return a.name.localeCompare(b.name);
+          $("#unselect-all").click(function() {
+            adminList.find("input[type=checkbox]").each(function() {
+              $(this).prop("checked", false);
             });
-
-            var i = 0;
-            items.forEach((item) => {
-              var val = "check-" + i;
-              let thisnum = i;
-              var h = '<tr class="admin-item">' +
-                '<td><input data-doc="'+id+'" type="checkbox" id="'+val+'" name="'+val+'" value="'+i+'" '+(item.visible?"checked":"")+'/></td>' +
-                '<td><img class="thumb admin" data-ref="'+i+'" src=""/></td>' + 
-                '<td>' + (item.type==="ASSEMBLY" ? "ASM" : "PART") + '</td>' +
-                '<td><label for="'+val+'">'+item.name+'</label></td>' + 
-                '</tr>';
-              adminList.append(h);
-              getThumb(item, $('img.thumb.admin[data-ref='+thisnum+']'));              
-              ++i;
-            });
-
-            $("#save").unbind("click");
-            $("#save").click(function() {
-              adminStatus.text("Saving...");
-              var newItems = [];
-              for (let i = 0; i < items.length; ++i) {
-                
-                var visible = $('input[data-doc="' + id + '"]').filter("#check-"+i).is(":checked");
-                if (visible) {
-                  items[i].visible = true;
-                  newItems.push(items[i]);
+          });
+  
+          $(".view-doc").click(function() {
+            let id = $(this).data("id");
+            adminStatus.html("Loading...");
+            adminList.html("");
+            clearSearch.click();
+            $.ajax('/api/documentData?documentId=' + id).then((items) => {
+              adminStatus.html("Document loaded.");
+  
+              items.sort(function(a,b) {
+                return a.name.localeCompare(b.name);
+              });
+  
+              var i = 0;
+              items.forEach((item) => {
+                var val = "check-" + i;
+                let thisnum = i;
+                var h = '<tr class="admin-item">' +
+                  '<td><input data-doc="'+id+'" type="checkbox" id="'+val+'" name="'+val+'" value="'+i+'" '+(item.visible?"checked":"")+'/></td>' +
+                  '<td><img class="thumb admin" data-ref="'+i+'" src=""/></td>' + 
+                  '<td>' + (item.type==="ASSEMBLY" ? "ASM" : "PART") + '</td>' +
+                  '<td><label for="'+val+'">'+item.name+'</label></td>' + 
+                  '</tr>';
+                adminList.append(h);
+                getThumb(item, $('img.thumb.admin[data-ref='+thisnum+']'));              
+                ++i;
+              });
+  
+              $("#save").unbind("click");
+              $("#save").click(function() {
+                adminStatus.text("Saving...");
+                var newItems = [];
+                for (let i = 0; i < items.length; ++i) {
+                  
+                  var visible = $('input[data-doc="' + id + '"]').filter("#check-"+i).is(":checked");
+                  if (visible) {
+                    items[i].visible = true;
+                    newItems.push(items[i]);
+                  }
                 }
-              }
-              $.ajax('/api/saveDocumentData?documentId='+id, { 
-                method: "POST",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(newItems),
-                success: function() {
-                  adminStatus.text("Saved!");
-                }}).fail(function(err) {
-                  adminStatus.text("Failed to save");
-                  console.log(err);
-                });
+                $.ajax('/api/saveDocumentData?documentId='+id, { 
+                  method: "POST",
+                  contentType: "application/json; charset=utf-8",
+                  data: JSON.stringify(newItems),
+                  success: function() {
+                    adminStatus.text("Saved!");
+                  }}).fail(function(err) {
+                    adminStatus.text("Failed to save");
+                    console.log(err);
+                  });
+              });
             });
           });
         });
-      });
+      }
+    },
+    error: function(err) {
+      console.log(err);
+      if (err.status === 401) {
+        var redirect = "/oauthSignin?redirectOnshapeUri=" + encodeURIComponent(window.location);
+        window.location.href = redirect;
+      }
     }
-  }); 
+  });
   $.ajax('/api/mkcadDocs').then((docList) => {
     var docMap = {};
     docList.forEach((doc) => {

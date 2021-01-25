@@ -116,11 +116,13 @@ function storeExtraParams(req, res) {
   var docId = req.query.documentId;
   var workId = req.query.workspaceId;
   var elId = req.query.elementId;
+  var redirect = req.query.redirectOnshapeUri;
 
   var state = {
     documentId : docId,
     workspaceId : workId,
-    elementId : elId
+    elementId : elId,
+    redirect: redirect
   };
 
   var stateString = JSON.stringify(state);
@@ -140,13 +142,11 @@ app.use('/oauthRedirect',
     function(req, res) {
       var uniqueID = "state" + passport.session();
       client.get(uniqueID, function(err, reply) {
-        console.log(reply);
         // reply is null when the key is missing
         if (reply != null) {
           
           var newParams = JSON.parse(reply);
-          var url = '/?' + 'documentId=' + newParams.documentId + '&workspaceId=' + newParams.workspaceId + '&elementId=' + newParams.elementId;
-          res.redirect(url);
+          res.redirect(newParams.redirect);
         }
       });
     });
