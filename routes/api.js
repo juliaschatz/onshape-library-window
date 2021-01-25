@@ -400,18 +400,14 @@ var getPartThumbRaw = function(req, res) {
 
 var getPartThumb = function(req, res) {
   var key = "thumb"+ req.query.documentId + "/" +req.query.versionId + "/" + req.query.elementId + "/" + req.query.partId;
-  var cached = myCache.get(key);
-  if (cached) {
-    res.send(cached);
-  }
-  else {
+  function fetchThumb() {
     getPartBBRaw(req, res).then((bb) => {
       var view = makeThumbView(bb);
       var viewMatrix = view.view;
       var thumbPixelSize = view.size / thumbHeight;
       makeAPICall(req, res, '/api/parts/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/partid/' + req.query.partId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true).then((data) => {
         var thumb = data.images[0];
-        myCache.set(key, thumb);
+        storage.set(key, thumb);
         res.send(thumb);
       }).catch(() => {
         res.status(404).send();
@@ -420,27 +416,47 @@ var getPartThumb = function(req, res) {
       res.status(404).send();
     });
   }
+  storage.get(key).then((cached) => {
+    if (cached === null || cached === undefined) {
+      // node-persist doesn't document what the miss behavior is >.>
+      fetchThumb();
+    }
+    else {
+      res.send(cached);
+    }
+  }).catch(() => { // No data
+    fetchThumb();
+  });
 }
 
 var getAssemThumb = function(req, res) {
   var key = "thumb"+ req.query.documentId + "/" +req.query.versionId + "/" + req.query.elementId;
-  var cached = myCache.get(key);
-  if (cached) {
-    res.send(cached);
-  }
-  getAssemBBRaw(req, res).then((bb) => {
-    var view = makeThumbView(bb);
-    var viewMatrix = view.view;
-    var thumbPixelSize = view.size / thumbHeight;
-    makeAPICall(req, res, '/api/assemblies/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true).then((data) => {
-      var thumb = data.images[0];
-      myCache.set(key, thumb);
-      res.send(thumb);
+  function fetchThumb() {
+    getAssemBBRaw(req, res).then((bb) => {
+      var view = makeThumbView(bb);
+      var viewMatrix = view.view;
+      var thumbPixelSize = view.size / thumbHeight;
+      makeAPICall(req, res, '/api/assemblies/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true).then((data) => {
+        var thumb = data.images[0];
+        storage.set(key, thumb);
+        res.send(thumb);
+      }).catch(() => {
+        res.status(404).send();
+      });
     }).catch(() => {
       res.status(404).send();
     });
-  }).catch(() => {
-    res.status(404).send();
+  }
+  storage.get(key).then((cached) => {
+    if (cached === null || cached === undefined) {
+      // node-persist doesn't document what the miss behavior is >.>
+      fetchThumb();
+    }
+    else {
+      res.send(cached);
+    }
+  }).catch(() => { // No data
+    fetchThumb();
   });
 }
 

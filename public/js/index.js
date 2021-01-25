@@ -86,6 +86,7 @@ $(document).ready(function() {
           let id = $(this).data("id");
           adminStatus.html("Loading...");
           adminList.html("");
+          clearSearch.click();
           $.ajax('/api/documentData?documentId=' + id).then((items) => {
             adminStatus.html("Document loaded.");
 
@@ -100,6 +101,7 @@ $(document).ready(function() {
               var h = '<tr class="admin-item">' +
                 '<td><input data-doc="'+id+'" type="checkbox" id="'+val+'" name="'+val+'" value="'+i+'" '+(item.visible?"checked":"")+'/></td>' +
                 '<td><img class="thumb admin" data-ref="'+i+'" src=""/></td>' + 
+                '<td>' + (item.type==="ASSEMBLY" ? "ASM" : "PART") + '</td>' +
                 '<td><label for="'+val+'">'+item.name+'</label></td>' + 
                 '</tr>';
               adminList.append(h);
@@ -111,7 +113,7 @@ $(document).ready(function() {
                 targetUrl = "/api/partThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId + "&partId=" + item.partId;
               }
               $.get(targetUrl).then((thumb) => {
-                $('img.thumb.admin[data-ref='+thisnum+']').attr("src", "data:image/jpeg;base64," + thumb);
+                $('img.thumb.admin[data-ref='+thisnum+']').attr("src", "data:image/png;base64," + thumb);
               });
               
               ++i;
@@ -193,7 +195,7 @@ $(document).ready(function() {
 
         if (admin) {
           $("tr.admin-item").each(function() {
-            let thisText = $(this).children(":eq(2)").text().toLowerCase();
+            let thisText = $(this).children(":eq(3)").text().toLowerCase();
             if (thisText.includes(text)) {
               $(this).show();
             }
