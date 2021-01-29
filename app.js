@@ -53,6 +53,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.engine('html', require('hbs').__express);
 app.set('view engine', 'html');
 
+app.disable('etag');
+
 var env = process.env.NODE_ENV || 'development';
 app.locals.ENV = env;
 app.locals.ENV_DEVELOPMENT = env == 'development';
