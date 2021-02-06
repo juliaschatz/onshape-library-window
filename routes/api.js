@@ -92,6 +92,43 @@ function makeAPICall(req, res, endpoint, method, nosend) {
   });
 }
 
+function callInsert(req, res) {
+  var targetUrl = apiUrl + '/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/instances';
+  return new Promise((resolve, reject) => {
+    request.post({
+      uri: targetUrl,
+      json: true,
+      body: req.body,
+      headers: {
+        'Authorization': 'Bearer ' + req.user.accessToken
+      }
+    }).catch((data) => {
+      console.log("CATCH " + data.statusCode);
+      if (data.statusCode === 401) {
+        authentication.refreshOAuthToken(req, res).then(function() {
+          callInsert(req, res).then((data) => {
+            resolve(data);
+          }).catch((data) => {
+            reject(data);
+          });
+        }).catch(function(err) {
+          console.log('Error refreshing token: ', err);
+          reject();
+        });
+      }
+      else if (data.statusCode === 403) {
+        console.log('Error: ' , JSON.stringify(data, null, 2));
+      } else {
+        console.log('Error: ', data.statusCode);
+        reject(data);
+      }
+    }).then((data) => {
+      res.send(data);
+      resolve(data);
+    });
+  });
+}
+
 var mkcadDocs = [
   {id: "92b0b8a2272e065eb151c20c", name: "Bearings"},
   {id: "c65881710a5484494e734574", name: "Bearings (Configurable)"},
@@ -311,7 +348,10 @@ function getUserIsMKCadAdmin(req, res) {
       }).catch(function(err) {
         console.log('Error refreshing token: ', err);
       });
-    } else {
+    } else if (data.statusCode === 403) { // possible expected outcome
+      res.send({auth: false});
+    }
+    else {
       res.send({auth: false});
       console.log('Error: ', data);
     }
@@ -336,7 +376,7 @@ function getMKCadData(req, res) {
 }
 
 var getVersions = (req, res) => makeAPICall(req, res, '/api/documents/d/' + req.query.documentId + '/versions', request.get);
-var callInsert = (req, res) => makeAPICall(req, res, '/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/instances', request.post);
+//var callInsert = (req, res) => makeAPICall(req, res, '/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/instances', request.post);
 var getElements = (req, res) => makeAPICall(req, res, '/api/documents/d/' + req.query.documentId + '/v/' + req.query.versionId + '/elements', request.get);
 var getElementsMetadata = (req, res) => makeAPICall(req, res, '/api/metadata/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e', request.get);
 var getPartsMetadata = (req, res) => makeAPICall(req, res, '/api/metadata/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e/' + req.query.elementId + '/p', request.get);

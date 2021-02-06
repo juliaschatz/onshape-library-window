@@ -13,6 +13,7 @@ var http = require('http');
 var uuid = require('uuid');
 var fs = require('fs');
 var storage = require('node-persist');
+const url = require('url');
 
 
 var api = require('./routes/api');
@@ -93,7 +94,7 @@ function ensureAuthenticated(req, res, next) {
     res.status(200);
     return next()
   }
-  res.status(401).redirect('/oauthRedirect');
+  res.status(401).redirect('/oauthRedirect' + url.parse(req.url,true).search);
 }
 
 app.use('/api', api);
@@ -128,7 +129,7 @@ function storeExtraParams(req, res) {
   };
 
   var stateString = JSON.stringify(state);
-  var uniqueID = "state" + passport.session();
+  var uniqueID = "state" + req.sessionID;
   client.set(uniqueID, stateString);
 
   return passport.authenticate("onshape")(req, res);
@@ -142,13 +143,16 @@ function storeExtraParams(req, res) {
 app.use('/oauthRedirect',
     passport.authenticate('onshape', { failureRedirect: '/grantDenied' }),
     function(req, res) {
-      var uniqueID = "state" + passport.session();
+      var uniqueID = "state" + req.sessionID;
       client.get(uniqueID, function(err, reply) {
         // reply is null when the key is missing
         if (reply != null) {
           
           var newParams = JSON.parse(reply);
           res.redirect(newParams.redirect);
+        }
+        else {
+          res.redirect("/" + url.parse(req.url,true).search);
         }
       });
     });
