@@ -1,10 +1,12 @@
-import React from 'react';
-import { fade, makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import React, { useRef } from 'react';
+import { fade, makeStyles, Theme, createStyles, createMuiTheme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 
 import { Autocomplete } from "@material-ui/lab";
 import { Checkbox, TextField } from '@material-ui/core';
+
+import './SearchBar.css'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,8 +29,15 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
+
+
+
 export default function Searchbar() {
   const classes = useStyles();
+
+  const input = useRef(null);
+
+  
 
   return (
     <div >
@@ -37,10 +46,12 @@ export default function Searchbar() {
           <div className={classes.grow} /> 
           <div className={classes.search}>
             <Autocomplete
+               ref={input}
                multiple
                disableCloseOnSelect
                options={searchOptions}
                limitTags={3}
+               color="white"
                getOptionLabel={(o: SearchOption) => o.title}
                renderOption={(option, { selected }) => (
                  <React.Fragment>
