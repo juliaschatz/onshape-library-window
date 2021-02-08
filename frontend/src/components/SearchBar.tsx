@@ -46,30 +46,33 @@ export default function Searchbar() {
           <div className={classes.grow} /> 
           <div className={classes.search}>
             <Autocomplete
-               ref={input}
-               multiple
-               disableCloseOnSelect
-               options={searchOptions}
-               limitTags={3}
-               color="white"
-               getOptionLabel={(o: SearchOption) => o.title}
-               renderOption={(option, { selected }) => (
-                 <React.Fragment>
-                   <Checkbox
-                    checked={selected}
-                   />
-                   {option.title}
-                 </React.Fragment>
-               )}
-               style={{ width: 600 }}
-               renderInput={(params) => (
-                 <TextField {...params} 
-                  // InputProps={{className: classes.searchColor}}
-                  variant="outlined" 
-                  placeholder="Search"
-                 />
-               )}
-               />
+              ref={input}
+              multiple
+              disableCloseOnSelect
+              options={searchOptions}
+              limitTags={3}
+              classes={{
+                input: classes.searchColor
+              }}
+              color="white"
+              getOptionLabel={(o: SearchOption) => o.title}
+              renderOption={(option, { selected }) => (
+                <React.Fragment>
+                  <Checkbox
+                   checked={selected}
+                  />
+                  {option.title}
+                </React.Fragment>
+              )}
+              style={{ width: 600 }}
+              renderInput={(params) => (
+                <TextField {...params} 
+                 // InputProps={{className: classes.searchColor}}
+                 variant="outlined" 
+                 placeholder="Search"
+                />
+              )}
+             />
           </div>
           <div className={classes.grow} />
         </Toolbar>
@@ -88,5 +91,5 @@ const searchOptions: SearchOption[] = [
 
 interface SearchOption {
   title: string;
-  tag: string;
+  tag: string
 }

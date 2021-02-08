@@ -21,6 +21,7 @@ function App() {
     <div className={classes.root}>
       <SearchBar />
       <DocumentList />
+      
     </div>
   );
 }
