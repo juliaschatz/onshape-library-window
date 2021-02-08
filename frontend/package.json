@@ -42,5 +42,8 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://mkcad.julias.ch/api/"
+  "proxy": "https://mkcad.julias.ch/api/",
+  "devDependencies": {
+    "@svgr/core": "^5.5.0"
+  }
 }
