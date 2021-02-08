@@ -3,6 +3,7 @@ import React from 'react';
 
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import Part from './Part';
+import Assembly from './Assembly';
 
 
 
@@ -101,7 +102,9 @@ export default function Document() {
                         <Part title='17t Sprocket'/>
                         <Part title='18t Sprocket'/>
                         <Part title='42t 20dp Gear'/>
-                        <Part title='VersaHub'/>
+                        <Part title='VersaHub' />
+                        
+                        <Assembly title='wcp gearbox' />
                         
                     </Grid>
                     {/* <Typography>
