@@ -6,7 +6,9 @@ import SettingsInputHdmiIcon from '@material-ui/icons/SettingsInputHdmi';
 
 import useStyles from './styles'
 
-const AssemblyIcon = SettingsInputHdmiIcon;
+import SvgAssemblyIcon from '../../icons/SvgAssemblyIcon'
+
+// const AssemblyIcon = SettingsInputHdmiIcon;
 
 interface AssemblyProps {
   title: string;
@@ -26,11 +28,11 @@ export default function Assembly(props: AssemblyProps) {
           alignItems="center"
         >
 
-          <AssemblyIcon />
+          <SvgAssemblyIcon className={classes.assemblyIcon}/>
           {/* <Divider flexItem variant='fullWidth' /> */}
           <Typography className={classes.title} variant='h5'>{props.title}</Typography>
           {/* <Typography variant='h5'></Typography> */}
-          <AssemblyIcon className={classes.transparent} />
+          <SvgAssemblyIcon className={classes.transparent} />
         </Grid>
       </Paper>
     </Grid>

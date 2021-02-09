@@ -1,6 +1,6 @@
 import classes from '*.module.css';
 import { makeStyles, Theme, createStyles } from '@material-ui/core';
-import React from 'react';
+// import React from 'react';
 import DocumentList from './components/insertables/DocumentList';
 import SearchBar from './components/SearchBar';
 import './styles.css'

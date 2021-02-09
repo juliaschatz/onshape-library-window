@@ -6,6 +6,8 @@ import SettingsInputAntennaIcon from '@material-ui/icons/SettingsInputAntenna';
 
 import useStyles from './styles'
 
+import SvgCompositePartIcon from '../../icons/SvgCompositePartIcon';
+
 
 const CompositeIcon = SettingsInputAntennaIcon;
 
@@ -27,11 +29,11 @@ export default function CompositePart(props: CompositePartProps) {
           alignItems="center"
         >
 
-          <CompositeIcon />
+          <SvgCompositePartIcon className={classes.assemblyIcon}/>
           {/* <Divider flexItem variant='fullWidth' /> */}
           <Typography className={classes.title} variant='h5'>{props.title}</Typography>
           {/* <Typography variant='h5'></Typography> */}
-          <CompositeIcon className={classes.transparent} />
+          <SvgCompositePartIcon className={classes.transparent} />
           
         </Grid>
       </Paper>
