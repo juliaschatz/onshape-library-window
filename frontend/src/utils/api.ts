@@ -8,12 +8,15 @@ async function request<T>(endpoint: string): Promise<T> {
 }
 
 
-export async function getMkcadDocs(): Promise<OnshapeDocument[]> {
+export async function getMkcadDocsFromApi(): Promise<OnshapeDocument[]> {
     const docs = await request<OnshapeDocument[]>("mkcadDocs");
     return docs;
 }
 
-export async function getOnshapeInsertables(): Promise<OnshapeInsertable[]> {
+export async function getOnshapeInsertablesFromApi(): Promise<OnshapeInsertable[]> {
     const docs = await request<OnshapeInsertable[]>("data");
+    console.log(docs);
     return docs;
 }
+
+getOnshapeInsertablesFromApi();

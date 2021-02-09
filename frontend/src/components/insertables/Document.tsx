@@ -1,10 +1,14 @@
 import { Theme, makeStyles, createStyles, Grid, Paper, Accordion, AccordionDetails, AccordionSummary, Typography, withStyles } from '@material-ui/core';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import Part from './Part';
 import Assembly from './Assembly';
+import CompositePart from './CompositePart';
 
+import { OnshapeDocument } from '../../utils/models/OnshapeDocument'
+import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
+import { getMkcadDocs, getOnshapeInsertables } from '../../utils/apiWrapper';
 
 
 // const useStyles = makeStyles((theme: Theme) => 
@@ -75,9 +79,23 @@ const AccordionSummaryIconLeft = withStyles({
     }
 })(AccordionSummary);
 
+interface DocumentProps {
+    doc: OnshapeDocument
+}
 
-export default function Document() {
+export default function Document(props: DocumentProps) {
     const classes = useStyles();
+
+    const [insertables, setInsertables] = useState<OnshapeInsertable[]>([]);
+
+    useEffect(() => {
+        (async function () {
+            const allInsertables = await getOnshapeInsertables();
+            const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+            setInsertables(filtered);
+        })();
+    }, [])
+
 
     return (
         <div className={classes.rootdiv}>
@@ -87,7 +105,7 @@ export default function Document() {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography className={classes.heading}>Example doc title</Typography>
+                    <Typography className={classes.heading}>{props.doc.name}</Typography>
                 </AccordionSummaryIconLeft>
                 <AccordionDetails>
                     <Grid
@@ -97,7 +115,7 @@ export default function Document() {
                         alignItems='stretch'
                         spacing={1}
                     >
-                        <Part title='test'/>
+                        {/* <Part title='test'/>
                         <Part title='test title 2'/>
                         <Part title='17t Sprocket'/>
                         <Part title='18t Sprocket'/>
@@ -105,6 +123,10 @@ export default function Document() {
                         <Part title='VersaHub' />
                         
                         <Assembly title='wcp gearbox' />
+
+                        <CompositePart title="test" /> */}
+
+                        {insertables.length > 0 && insertables.map(p => (<p key={p.elementId}>{p.name}</p>))}
                         
                     </Grid>
                     {/* <Typography>

@@ -1,5 +1,7 @@
 import { makeStyles, Theme, createStyles } from "@material-ui/core";
 
+const iconSize = '1.5em';
+const assemblyIconSize = '2em';
 
 export default makeStyles((theme: Theme) =>
   createStyles({
@@ -16,7 +18,21 @@ export default makeStyles((theme: Theme) =>
       color: 'white'
     },
     transparent: {
-      color: '#b0b0b8'
+      // display: 'hidden',
+      // width: '2em',
+      // height: '2em'
+      // flexGrow: 
+      visibility: 'hidden',
+      width: iconSize,
+      height: iconSize
+    },
+    icon: {
+      width: iconSize,
+      height: iconSize
+    },
+    assemblyIcon: {
+      width: assemblyIconSize,
+      height: assemblyIconSize
     }
   })
 );
