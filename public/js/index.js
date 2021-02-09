@@ -39,6 +39,10 @@ $(document).ready(function() {
   var adminButton = $("#toggle-view");
   let searchbar = $("#insert-search");
   let clearSearch = $("#clear-search");
+  let modalClose = $("#close-modal");
+  let modal = $("#configure-modal");
+  let modalInsert = $("#modal-insert");
+  let modalData = $("#config-opts");
 
   var admin = false;
   adminButton.click(function(evt) {
@@ -58,6 +62,10 @@ $(document).ready(function() {
       itemsListContainer.show();
       adminButton.text("Admin");
     }
+  });
+
+  modalClose.click(function() {
+    modal.hide();
   });
 
   $.ajax({
@@ -167,6 +175,7 @@ $(document).ready(function() {
       $(this).siblings("ul").toggle();
     });
     $.ajax('/api/data').then((data) => {
+      console.log(data);
       for (var i = 0; i < data.length; ++i) {
         var item = data[i];
         var h = '<li class="insert-item" data-ref="' + i + '"><img data-ref="'+i+'" class="thumb user" src=""/><span class="item-name">' + item.name + '</li>';
@@ -179,6 +188,7 @@ $(document).ready(function() {
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(data),
         success: function(data) {
+          console.log(data);
           data.forEach((item) => {
             $('img.thumb.user[data-ref='+item.ref+']').attr("src", "data:image/png;base64," + item.thumb);
           });
@@ -187,11 +197,62 @@ $(document).ready(function() {
       $(".insert-item").click(function() {
         var ref = parseInt($(this).data("ref"));
         var item = data[ref];
-        if (item.type === "ASSEMBLY") {
-          insertAssembly(item.documentId, item.versionId, item.elementId);
+        if (item.config.length > 0) {
+          modalInsert.unbind("click");
+          modalData.html("");
+          let i = 0;
+          item.config.forEach((item) => {
+            modalData.append("<label for='config-opt-"+i+"'>" + item.name + ": </label>");
+            if (item.type === "QUANTITY") {
+              modalData.append("<br /><input class='config-opt' type='text' id='config-opt-"+i+"' data-ref='"+i+"' value='"+item.default+"' />");
+            }
+            else if (item.type === "BOOLEAN") {
+              modalData.append("&nbsp;<input class='config-opt' type='checkbox' id='config-opt-"+i+"' data-ref='"+i+"' " + (item.default ? "checked" : "") + " />");
+            }
+            else if (item.type === "ENUM") {
+              let id = 'config-opt-'+i;
+              modalData.append("<br /><select class='config-opt' id='"+id+"' data-ref='"+i+"' value='"+item.default+"'></select>");
+              item.options.forEach((option) => {
+                $("#"+id).append("<option value='"+option.value+"'>"+option.name+"</option>")
+              });
+            }
+            modalData.append("<br />")
+            i += 1;
+          });
+
+          modalInsert.click(function() {
+            let configuration = {};
+            $(".config-opt").each(function() {
+              let i = $(this).data('ref');
+              let conf = item.config[i];
+              if (conf.type === "QUANTITY") {
+                configuration[conf.id] = $(this).val();
+              }
+              else if (conf.type === "BOOLEAN") {
+                configuration[conf.id] = $(this).is(":checked");
+              }
+              else if (conf.type === "ENUM") {
+                configuration[conf.id] = $(this).val();
+              }
+            });
+            if (item.type === "ASSEMBLY") {
+              insertAssembly(item.documentId, item.versionId, item.elementId, configuration);
+            }
+            else if (item.type === "PART") {
+              insertPart(item.documentId, item.versionId, item.elementId, item.partId, configuration);
+            }
+            modal.hide();
+          });
+
+          modal.show();
         }
-        else if (item.type === "PART") {
-          insertPart(item.documentId, item.versionId, item.elementId, item.partId);
+        else {
+          if (item.type === "ASSEMBLY") {
+            insertAssembly(item.documentId, item.versionId, item.elementId);
+          }
+          else if (item.type === "PART") {
+            insertPart(item.documentId, item.versionId, item.elementId, item.partId);
+          }
         }
       });
 
@@ -259,7 +320,17 @@ function getThumb(item, element) {
   $.get(targetUrl).then(setThumb);
 }
 
-function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId) {
+function encodeConfiguration(config) {
+  let confStr = "";
+  for (var id in config) {
+    confStr += id + "=" + config[id];
+    confStr += ";";
+  }
+  confStr = confStr.slice(0, -1); // Remove trailing ;
+  return confStr;
+}
+
+function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId, configuration) {
   $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
   {
     method: "POST",
@@ -272,7 +343,8 @@ function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId) {
       "isWholePartStudio": false,
       "microversionId": "",
       "partId": "",
-      "versionId": sourceVersionId
+      "versionId": sourceVersionId,
+      "configuration": encodeConfiguration(configuration)
     }),
     success: function() {
       console.log("Inserted!");
@@ -282,7 +354,7 @@ function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId) {
   });
 }
 
-function insertPart(sourceDocId, sourceVersionId, sourceElementId, sourcePartId) {
+function insertPart(sourceDocId, sourceVersionId, sourceElementId, sourcePartId, configuration) {
   $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
   {
     method: "POST",
@@ -295,7 +367,8 @@ function insertPart(sourceDocId, sourceVersionId, sourceElementId, sourcePartId)
       "isPart": true,
       "microversionId": "",
       "partId": sourcePartId,
-      "versionId": sourceVersionId
+      "versionId": sourceVersionId,
+      "configuration": encodeConfiguration(configuration)
     }),
     success: function() {
       console.log("Inserted!");

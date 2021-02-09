@@ -93,6 +93,10 @@ function makeAPICall(req, res, endpoint, method, nosend) {
 }
 
 function callInsert(req, res) {
+  if (req.query.documentId === undefined || req.query.workspaceId === undefined || req.query.elementId === undefined) {
+    res.status(404).send();
+    return;
+  }
   var targetUrl = apiUrl + '/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/instances';
   return new Promise((resolve, reject) => {
     request.post({
@@ -197,6 +201,42 @@ function documentList(req, res) {
   res.send(mkcadDocs);
 }
 
+function reprocessConfigurationDef(returnedConfigDef) {
+  var reprocessed = [];
+  returnedConfigDef.configurationParameters.forEach((param) => {
+    let newParam = {};
+    newParam.id = param.message.parameterId; // Internal ID
+    newParam.name = param.message.parameterName; // Human-readable name
+
+    if (param.typeName === "BTMConfigurationParameterQuantity") {
+      // Need to record 
+      newParam.type = "QUANTITY";
+      newParam.quantityType = param.message.quantityType; // length, angle, real, int, etc
+      newParam.quantityUnits = param.message.rangeAndDefault.units; // inch, mm, deg
+      newParam.quantityMin = param.message.rangeAndDefault.minValue;
+      newParam.quantityMax = param.message.rangeAndDefault.maxValue;
+      newParam.default = param.message.rangeAndDefault.defaultValue;
+    }
+    else if (param.typeName === "BTMConfigurationParameterEnum") {
+      newParam.type = "ENUM";
+      newParam.default = param.message.defaultValue;
+      newParam.options = [];
+      param.message.options.forEach((option) => {
+        var newOpt = {};
+        newOpt.name = option.message.optionName; // Human-readable
+        newOpt.value = option.message.option; // Internal
+        newParam.options.push(newOpt);
+      });
+    }
+    else if (param.typeName === "BTMConfigurationParameterBoolean") {
+      newParam.type = "BOOLEAN";
+      newParam.default = param.message.defaultValue;
+    }
+    reprocessed.push(newParam);
+  });
+  return reprocessed;
+}
+
 function documentData(req, res) {
   
   checkAuth(req.user.id).then(() => {
@@ -251,52 +291,67 @@ function documentData(req, res) {
           };
 
           metadataResult.items.forEach((metaItem) => {
-            if (metaItem.elementType === META.ASSEM) {
-              // Assembly: Check if element description is Release
-              var name = getName(metaItem);
-              insertable_data.push({
-                type: "ASSEMBLY",
-                name: name,
-                elementId: metaItem.elementId,
+            if (metaItem.elementType === META.ASSEM || metaItem.elementType === META.PARTSTUDIO) {
+              var eConfigReq = req;
+              eConfigReq.query = {
+                documentId: documentId,
                 versionId: versionId,
-                documentId: documentId,
-                visible: isVisible(metaItem.elementId)
-              });
-              
-              decreaseElements();            
-            }
-            else if (metaItem.elementType === META.PARTSTUDIO) {
-              // Part studio: Check each item in studio
-              partMetaReq = req;
-              partMetaReq.query = {
-                documentId: documentId,
                 elementId: metaItem.elementId,
-                versionId: versionId
               };
-              var pMetaPromise = getPartsMetadataRaw(partMetaReq, res).then((itemMetaResult) => {
-                if (itemMetaResult === undefined) {
-                  decreaseElements();
-                  return;
-                }
-                var partsLeft = itemMetaResult.items.length;
-                itemMetaResult.items.forEach((itemMeta) => {
-                  var name = getName(itemMeta);
+              var eConfigPromise = getElementConfigurationRaw(eConfigReq, res).then((configResult) => {
+                var configOpts = reprocessConfigurationDef(configResult);
+                var elementName = getName(metaItem);
+                if (metaItem.elementType === META.ASSEM) {
                   insertable_data.push({
-                    type: "PART",
-                    name: name,
-                    partId: itemMeta.partId,
+                    type: "ASSEMBLY",
+                    name: elementName,
                     elementId: metaItem.elementId,
                     versionId: versionId,
                     documentId: documentId,
-                    visible: isVisible(metaItem.elementId, itemMeta.partId)
+                    visible: isVisible(metaItem.elementId),
+                    config: configOpts
                   });
-                  partsLeft--;
-                  if (partsLeft === 0) {
-                    decreaseElements();
-                  }
-                });
-              }); // part meta promise
-            } 
+                  
+                  decreaseElements();            
+                }
+                else if (metaItem.elementType === META.PARTSTUDIO) {
+                  // Part studio: Check each item in studio
+                  partMetaReq = req;
+                  partMetaReq.query = {
+                    documentId: documentId,
+                    elementId: metaItem.elementId,
+                    versionId: versionId
+                  };
+                  var pMetaPromise = getPartsMetadataRaw(partMetaReq, res).then((itemMetaResult) => {
+                    if (itemMetaResult === undefined) {
+                      decreaseElements();
+                      return;
+                    }
+                    var partsLeft = itemMetaResult.items.length;
+                    itemMetaResult.items.forEach((itemMeta) => {
+                      var name = getName(itemMeta);
+                      if (configOpts.length > 0) {
+                        name = elementName; // Configurable part studio
+                      }
+                      insertable_data.push({
+                        type: "PART",
+                        name: name,
+                        partId: itemMeta.partId,
+                        elementId: metaItem.elementId,
+                        versionId: versionId,
+                        documentId: documentId,
+                        visible: isVisible(metaItem.elementId, itemMeta.partId),
+                        config: configOpts
+                      });
+                      partsLeft--;
+                      if (partsLeft === 0) {
+                        decreaseElements();
+                      }
+                    });
+                  }); // part meta promise
+                }
+              }); // configuration promise
+            }
             else { // All non-part studio non-assemblies
               decreaseElements();
             }
@@ -384,6 +439,7 @@ var getPartsMetadata = (req, res) => makeAPICall(req, res, '/api/metadata/d/' + 
 var getElementsMetadataRaw = (req, res) => makeAPICall(req, res, '/api/metadata/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e', request.get, true);
 var getPartsMetadataRaw = (req, res) => makeAPICall(req, res, '/api/metadata/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e/' + req.query.elementId + '/p', request.get, true);
 var getVersionsRaw = (req, res) => makeAPICall(req, res, '/api/documents/d/' + req.query.documentId + '/versions', request.get, true);
+var getElementConfigurationRaw = (req, res) => makeAPICall(req, res, '/api/elements/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e/' + req.query.elementId + '/configuration', request.get, true);
 
 router.get('/versions', getVersions);
 // Insert
@@ -532,12 +588,12 @@ var getThumbs = function(req, res) {
         storage.set(key, thumb);
         item.thumb = thumb;
         response.push(item);
-        decreaseCounter();
+        decreaseCount();
       }).catch(() => {
-        decreaseCounter();
+        decreaseCount();
       });
     }).catch(() => {
-      decreaseCounter();
+      decreaseCount();
     });
   }
 
@@ -550,7 +606,7 @@ var getThumbs = function(req, res) {
       key = "thumb"+ item.documentId + "/" +item.versionId + "/" + item.elementId + "/" + item.partId;
     }
     storage.get(key).then((cached) => {
-      if (cached === null) {
+      if (cached === null || cached === undefined) {
         fetchThumb(item, key);
       }
       else {

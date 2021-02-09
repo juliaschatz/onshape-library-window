@@ -152,7 +152,11 @@ app.use('/oauthRedirect',
           res.redirect(newParams.redirect);
         }
         else {
-          res.redirect("/" + url.parse(req.url,true).search);
+          var querystring = url.parse(req.url,true).search;
+          if (querystring === null) {
+            querystring = "";
+          }
+          res.redirect("/" + querystring);
         }
       });
     });
