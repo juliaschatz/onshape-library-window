@@ -24,6 +24,11 @@ $(document).ready(function() {
   theContext.wvId = theQuery.wvmId;
   theContext.elementId = theQuery.eId;
 
+  if (!theContext.documentId) {
+    $("#message").html("The application encountered an error loading. Please close and reopen the MKCad tab.");
+    throw new Error("Didn't receive query data");
+  }
+
   // Hold onto the current session information
   theContext.verison = 0;
   theContext.microversion = 0;
@@ -204,10 +209,15 @@ $(document).ready(function() {
           item.config.forEach((item) => {
             modalData.append("<label for='config-opt-"+i+"'>" + item.name + ": </label>");
             if (item.type === "QUANTITY") {
-              modalData.append("<br /><input class='config-opt' type='text' id='config-opt-"+i+"' data-ref='"+i+"' value='"+item.default+"' />");
+              modalData.append("<br /><input class='config-opt' type='number' id='config-opt-"+i+"' data-ref='"+i+"' value='"+item.default+"' "
+               + "min='"+item.quantityMin+"' max='"+item.quantityMax+"' " + ((item.quantityType === "INTEGER") ? "step='1'" : "step='any'") + " />");
+              modalData.append("&nbsp;<span class='.input-units'>" + item.quantityUnits + "</span>" );
             }
             else if (item.type === "BOOLEAN") {
               modalData.append("&nbsp;<input class='config-opt' type='checkbox' id='config-opt-"+i+"' data-ref='"+i+"' " + (item.default ? "checked" : "") + " />");
+            }
+            else if (item.type === "STRING") {
+              modalData.append("<br /><input class='config-opt' type='text' id='config-opt-"+i+"' data-ref='"+i+"' value='"+item.default+"' />");
             }
             else if (item.type === "ENUM") {
               let id = 'config-opt-'+i;
@@ -226,7 +236,10 @@ $(document).ready(function() {
               let i = $(this).data('ref');
               let conf = item.config[i];
               if (conf.type === "QUANTITY") {
-                configuration[conf.id] = $(this).val();
+                configuration[conf.id] = parseFloat($(this).val()).toFixed(6);
+                if (conf.quantityUnits !== "") {
+                  configuration[conf.id] +=  "+" + conf.quantityUnits;
+                }
               }
               else if (conf.type === "BOOLEAN") {
                 configuration[conf.id] = $(this).is(":checked");
@@ -234,25 +247,19 @@ $(document).ready(function() {
               else if (conf.type === "ENUM") {
                 configuration[conf.id] = $(this).val();
               }
+              else if (conf.type === "STRING") {
+                configuration[conf.id] = $(this).val();
+              }
             });
-            if (item.type === "ASSEMBLY") {
-              insertAssembly(item.documentId, item.versionId, item.elementId, configuration);
-            }
-            else if (item.type === "PART") {
-              insertPart(item.documentId, item.versionId, item.elementId, item.partId, configuration);
-            }
+            console.log(item);
+            doInsert(item.type, item.documentId, item.versionId, item.elementId, configuration, item.partId);
             modal.hide();
           });
 
           modal.show();
         }
         else {
-          if (item.type === "ASSEMBLY") {
-            insertAssembly(item.documentId, item.versionId, item.elementId);
-          }
-          else if (item.type === "PART") {
-            insertPart(item.documentId, item.versionId, item.elementId, item.partId);
-          }
+          doInsert(item.type, item.documentId, item.versionId, item.elementId, null, item.partId);
         }
       });
 
@@ -305,68 +312,37 @@ $(document).ready(function() {
   });
 });
 
-function getThumb(item, element) {
-  var targetUrl;
-  if (item.type === "ASSEMBLY") {
-    targetUrl = "/api/assemThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId;
-  }
-  else if (item.type === "PART") {
-    targetUrl = "/api/partThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId + "&partId=" + item.partId;
-  }
-
-  var setThumb = (thumb) => {
-    element.attr("src", "data:image/jpeg;base64," + thumb);
-  }
-  $.get(targetUrl).then(setThumb);
-}
-
 function encodeConfiguration(config) {
+  if (!config || config === null || config === undefined) {
+    return "";
+  }
+  let keys = Object.keys(config);
   let confStr = "";
-  for (var id in config) {
+  keys.forEach((id) => {
     confStr += id + "=" + config[id];
     confStr += ";";
-  }
+  });
   confStr = confStr.slice(0, -1); // Remove trailing ;
+  console.log(confStr);
   return confStr;
 }
 
-function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId, configuration) {
+function doInsert(type, sourceDocId, sourceVersionId, sourceElemId, configuration, partId) {
+  if (partId === undefined) {
+    partId = "";
+  }
   $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
   {
     method: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify({
       "documentId": sourceDocId,
-      "elementId": sourceAssemId,
+      "elementId": sourceElemId,
       "featureId": "",
-      "isAssembly": true,
-      "isWholePartStudio": false,
+      "isAssembly": type === "ASSEMBLY",
+      "isWholePartStudio": type === "PARTSTUDIO",
       "microversionId": "",
-      "partId": "",
-      "versionId": sourceVersionId,
-      "configuration": encodeConfiguration(configuration)
-    }),
-    success: function() {
-      console.log("Inserted!");
-    }
-  }).fail(function(err) {
-    console.log("Insert failed")
-  });
-}
-
-function insertPart(sourceDocId, sourceVersionId, sourceElementId, sourcePartId, configuration) {
-  $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
-  {
-    method: "POST",
-    contentType: "application/json; charset=utf-8",
-    data: JSON.stringify({
-      "documentId": sourceDocId,
-      "elementId": sourceElementId,
-      "isAssembly": false,
-      "isWholePartStudio": false,
-      "isPart": true,
-      "microversionId": "",
-      "partId": sourcePartId,
+      "partId": partId,
       "versionId": sourceVersionId,
       "configuration": encodeConfiguration(configuration)
     }),

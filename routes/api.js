@@ -212,10 +212,10 @@ function reprocessConfigurationDef(returnedConfigDef) {
       // Need to record 
       newParam.type = "QUANTITY";
       newParam.quantityType = param.message.quantityType; // length, angle, real, int, etc
-      newParam.quantityUnits = param.message.rangeAndDefault.units; // inch, mm, deg
-      newParam.quantityMin = param.message.rangeAndDefault.minValue;
-      newParam.quantityMax = param.message.rangeAndDefault.maxValue;
-      newParam.default = param.message.rangeAndDefault.defaultValue;
+      newParam.quantityUnits = param.message.rangeAndDefault.message.units; // inch, mm, deg
+      newParam.quantityMin = param.message.rangeAndDefault.message.minValue;
+      newParam.quantityMax = param.message.rangeAndDefault.message.maxValue;
+      newParam.default = param.message.rangeAndDefault.message.defaultValue;
     }
     else if (param.typeName === "BTMConfigurationParameterEnum") {
       newParam.type = "ENUM";
@@ -230,6 +230,10 @@ function reprocessConfigurationDef(returnedConfigDef) {
     }
     else if (param.typeName === "BTMConfigurationParameterBoolean") {
       newParam.type = "BOOLEAN";
+      newParam.default = param.message.defaultValue;
+    }
+    else if (param.typeName === "BTMConfigurationParameterString") {
+      newParam.type = "STRING";
       newParam.default = param.message.defaultValue;
     }
     reprocessed.push(newParam);
@@ -315,40 +319,51 @@ function documentData(req, res) {
                   decreaseElements();            
                 }
                 else if (metaItem.elementType === META.PARTSTUDIO) {
-                  // Part studio: Check each item in studio
-                  partMetaReq = req;
-                  partMetaReq.query = {
-                    documentId: documentId,
-                    elementId: metaItem.elementId,
-                    versionId: versionId
-                  };
-                  var pMetaPromise = getPartsMetadataRaw(partMetaReq, res).then((itemMetaResult) => {
-                    if (itemMetaResult === undefined) {
-                      decreaseElements();
-                      return;
-                    }
-                    var partsLeft = itemMetaResult.items.length;
-                    itemMetaResult.items.forEach((itemMeta) => {
-                      var name = getName(itemMeta);
-                      if (configOpts.length > 0) {
-                        name = elementName; // Configurable part studio
-                      }
-                      insertable_data.push({
-                        type: "PART",
-                        name: name,
-                        partId: itemMeta.partId,
-                        elementId: metaItem.elementId,
-                        versionId: versionId,
-                        documentId: documentId,
-                        visible: isVisible(metaItem.elementId, itemMeta.partId),
-                        config: configOpts
-                      });
-                      partsLeft--;
-                      if (partsLeft === 0) {
-                        decreaseElements();
-                      }
+                  // Part studio: Check each item in studio if it's not configurable
+                  if (configOpts.length > 0) {
+                    insertable_data.push({
+                      type: "PARTSTUDIO",
+                      name: elementName,
+                      elementId: metaItem.elementId,
+                      versionId: versionId,
+                      documentId: documentId,
+                      visible: isVisible(metaItem.elementId),
+                      config: configOpts
                     });
-                  }); // part meta promise
+                    decreaseElements();   
+                  }
+                  else {
+                    partMetaReq = req;
+                    partMetaReq.query = {
+                      documentId: documentId,
+                      elementId: metaItem.elementId,
+                      versionId: versionId
+                    };
+                    var pMetaPromise = getPartsMetadataRaw(partMetaReq, res).then((itemMetaResult) => {
+                      if (itemMetaResult === undefined) {
+                        decreaseElements();
+                        return;
+                      }
+                      var partsLeft = itemMetaResult.items.length;
+                      itemMetaResult.items.forEach((itemMeta) => {
+                        var name = getName(itemMeta);
+                        insertable_data.push({
+                          type: "PART",
+                          name: name,
+                          partId: itemMeta.partId,
+                          elementId: metaItem.elementId,
+                          versionId: versionId,
+                          documentId: documentId,
+                          visible: isVisible(metaItem.elementId, itemMeta.partId),
+                          config: configOpts
+                        });
+                        partsLeft--;
+                        if (partsLeft === 0) {
+                          decreaseElements();
+                        }
+                      });
+                    }); // part meta promise
+                  }
                 }
               }); // configuration promise
             }
@@ -414,8 +429,6 @@ function getUserIsMKCadAdmin(req, res) {
 }
 
 function getMKCadData(req, res) {
-  console.log(req.user.accessToken);
-
   var data = [];
   var docsLeft = mkcadDocs.length;
   mkcadDocs.forEach((doc) => {
@@ -574,9 +587,17 @@ var getThumbs = function(req, res) {
       bbEndpoint = '/api/assemblies/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/boundingboxes';
       viewsEndpoint = '/api/assemblies/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/shadedviews';
     }
-    else {
+    else if (item.type === "PART") {
       bbEndpoint = '/api/parts/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/partid/' + item.partId + '/boundingboxes';
       viewsEndpoint = '/api/parts/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/partid/' + item.partId + '/shadedviews';
+    }
+    else if (item.type === "PARTSTUDIO") {
+      bbEndpoint = '/api/partstudios/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/boundingboxes';
+      viewsEndpoint = '/api/partstudios/d/'+ item.documentId +'/v/'+item.versionId+'/e/' + item.elementId + '/shadedviews';
+    }
+    else {
+      decreaseCount();
+      returna;
     }
 
     makeAPICall(req, res, bbEndpoint, request.get, true).then((bb) => {
@@ -599,11 +620,15 @@ var getThumbs = function(req, res) {
 
   items.forEach((item) => {
     var key;
-    if (item.type === "ASSEMBLY") {
+    if (item.type === "ASSEMBLY" || item.type === "PARTSTUDIO") {
       key = "thumb"+ item.documentId + "/" +item.versionId + "/" + item.elementId;
     }
-    else {
+    else if (item.type === "PART") {
       key = "thumb"+ item.documentId + "/" +item.versionId + "/" + item.elementId + "/" + item.partId;
+    }
+    else {
+      decreaseCount();
+      return;
     }
     storage.get(key).then((cached) => {
       if (cached === null || cached === undefined) {

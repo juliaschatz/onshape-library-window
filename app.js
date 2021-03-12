@@ -94,7 +94,7 @@ function ensureAuthenticated(req, res, next) {
     res.status(200);
     return next()
   }
-  res.status(401).redirect('/oauthRedirect' + url.parse(req.url,true).search);
+  res.status(401).redirect('/oauthSignin' + url.parse(req.url,true).search);
 }
 
 app.use('/api', api);
@@ -153,7 +153,7 @@ app.use('/oauthRedirect',
         }
         else {
           var querystring = url.parse(req.url,true).search;
-          if (querystring === null) {
+          if (querystring === null || querystring === undefined) {
             querystring = "";
           }
           res.redirect("/" + querystring);
