@@ -116,15 +116,12 @@ app.use('/oauthSignin', storeExtraParams,
 );
 
 function storeExtraParams(req, res) {
-  var docId = req.query.documentId;
-  var workId = req.query.workspaceId;
-  var elId = req.query.elementId;
   var redirect = req.query.redirectOnshapeUri;
+  if (redirect === undefined) {
+    redirect = "/" + url.parse(req.url,true).search;
+  }
 
   var state = {
-    documentId : docId,
-    workspaceId : workId,
-    elementId : elId,
     redirect: redirect
   };
 

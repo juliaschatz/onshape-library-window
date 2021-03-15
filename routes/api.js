@@ -496,17 +496,6 @@ var getPartBBRaw = function(req, res) {
   return makeAPICall(req, res, '/api/parts/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/partid/' + req.query.partId + '/boundingboxes', request.get, true);
 }
 
-var getAssemThumbRaw = function(req, res) {
-  var viewMatrix = req.query.thumbView;
-  var thumbPixelSize = req.query.size / thumbHeight;
-  return makeAPICall(req, res, '/api/assemblies/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true);
-}
-var getPartThumbRaw = function(req, res) {
-  var viewMatrix = req.query.thumbView;
-  var thumbPixelSize = req.query.size / thumbHeight;
-  return makeAPICall(req, res, '/api/parts/d/'+ req.query.documentId +'/v/'+req.query.versionId+'/e/' + req.query.elementId + '/partid/' + req.query.partId + '/shadedviews?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true);
-}
-
 var getPartThumb = function(req, res) {
   var key = "thumb"+ req.query.documentId + "/" +req.query.versionId + "/" + req.query.elementId + "/" + req.query.partId;
   function fetchThumb() {

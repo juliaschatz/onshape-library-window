@@ -251,7 +251,6 @@ $(document).ready(function() {
                 configuration[conf.id] = $(this).val();
               }
             });
-            console.log(item);
             doInsert(item.type, item.documentId, item.versionId, item.elementId, configuration, item.partId);
             modal.hide();
           });
@@ -415,44 +414,3 @@ function onDomLoaded() {
 // When we are loaded, start the Onshape client messageing
 document.addEventListener("DOMContentLoaded", onDomLoaded);
 
-//
-// Simple alert infrasturcture
-function displayAlert(message) {
-  $("#alert_template span").remove();
-  $("#alert_template button").after('<span>' + message + '<br></span>');
-  $('#alert_template').fadeIn('slow');
-  $('#alert_template .close').click(function(ee) {
-    $("#alert_template").hide();
-    $("#alert_template span").hide();
-  });
-}
-
-var Subscribed = true;
-
-//
-// Check to see if the user is subscribed to this application
-function checkSubscription() {
-  // Make sure the user is subscribed
-  return new Promise(function(resolve, reject) {
-    $.ajax('/api/accounts', {
-      dataType: 'json',
-      type: 'GET',
-      success: function(data) {
-        var object = data;
-
-        Subscribed = object.Subscribed;
-
-        // If there is no active subscription, then block the Create button.
-        if (Subscribed == false) {
-          displayAlert('No active subscription for this application. Check the Onshape App Store.');
-          var b = document.getElementById("element-generate");
-          b.disabled = true;
-
-          reject(0);
-        }
-        else
-          resolve(1);
-      }
-    });
-  });
-}
