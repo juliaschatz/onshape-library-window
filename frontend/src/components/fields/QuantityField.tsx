@@ -2,15 +2,12 @@ import React from "react";
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { Configuration } from "../../utils/models/Configuration";
+import FieldProps from "./FieldProps";
 
-interface QuantityFieldProps {
-  configItem: Configuration;
-}
-
-export default function QuantityField(props: QuantityFieldProps) {
+export default function QuantityField(props: FieldProps) {
   const configItem = props.configItem;
   const [helperText, setHelperText] = React.useState('');
-  const [value, setValue] = React.useState(new String(configItem.default));
+  const [value, setValue] = React.useState(configItem.default as string);
 
   const onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     var newValue = +event.target.value;
@@ -38,7 +35,10 @@ export default function QuantityField(props: QuantityFieldProps) {
       else {
         setHelperText('');
       }
-      setValue(new String(newValue));      
+      setValue(newValue.toString());
+      var newResult = {...props.results};
+      newResult[configItem.id] = `${value}${configItem.quantityUnits ? `+${configItem.quantityUnits}` : ""}`;
+      props.setResult(newResult);      
     } else {
       setHelperText('Enter a number');
     }

@@ -3,17 +3,18 @@ import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import { Configuration } from "../../utils/models/Configuration";
+import FieldProps from "./FieldProps";
 
-interface EnumFieldProps {
-  configItem: Configuration;
-}
-
-export default function EnumField(props: EnumFieldProps) {
+export default function EnumField(props: FieldProps) {
   const configItem = props.configItem;
-  const [value, setValue] = React.useState(new String(configItem.default));
+  const [value, setValue] = React.useState(configItem.default as string);
 
   const onChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setValue(event.target.value as string);
+    let fuck = event.target.value as string;
+    var newResult = {...props.results};
+    newResult[configItem.id] = fuck;
+    props.setResult(newResult);
   }
   const label_id = `label-${configItem.id}`;
   return <div><InputLabel shrink id={label_id}>{configItem.name}</InputLabel>

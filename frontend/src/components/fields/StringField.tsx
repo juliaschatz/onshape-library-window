@@ -2,17 +2,17 @@ import React from "react";
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { Configuration } from "../../utils/models/Configuration";
+import FieldProps from "./FieldProps";
 
-interface StringFieldProps {
-  configItem: Configuration;
-}
-
-export default function StringField(props: StringFieldProps) {
+export default function StringField(props: FieldProps) {
   const configItem = props.configItem;
-  const [value, setValue] = React.useState(new String(configItem.default));
+  const [value, setValue] = React.useState(configItem.default);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
+    var newResult = {...props.results};
+    newResult[configItem.id] = value;
+    props.setResult(newResult);
   }
   
   return <TextField

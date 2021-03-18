@@ -17,22 +17,19 @@ interface InsertDialogProps {
   insertable: OnshapeInsertable;
   open: boolean;
   setOpen: (open: boolean) => void;
+  setConfigOpts: ({}) => void;
+  configOpts: {[key: string]: string};
+  handleInsert: () => void;
 }
 
 export default function InsertDialog(props: InsertDialogProps) {
+  var configOpts = props.configOpts;
+  var setConfigOpts = props.setConfigOpts;
   var insertable = props.insertable;
 
   const handleClose = () => {
     props.setOpen(false);
   };
-
-  const handleInsert = () => {
-    props.setOpen(false);
-  };
-
-  if (!insertable.config) {
-      //handleInsert(); // No config items, insert immediately
-  }
 
   return (
     <div>
@@ -41,16 +38,16 @@ export default function InsertDialog(props: InsertDialogProps) {
         <DialogContent>
           {insertable.config && insertable.config.map((configItem) => {
             if (configItem.type === "QUANTITY") {
-                return <div><QuantityField configItem={configItem} /></div>
+              return <div><QuantityField configItem={configItem} setResult={setConfigOpts} results={configOpts}/></div>
             }
             else if (configItem.type === "BOOLEAN") {
-              return <div><BooleanField configItem={configItem} /></div>
+              return <div><BooleanField configItem={configItem} setResult={setConfigOpts} results={configOpts}/></div>
             }
             else if (configItem.type === "ENUM") {
-              return <div><EnumField configItem={configItem} /></div>
+              return <div><EnumField configItem={configItem} setResult={setConfigOpts} results={configOpts}/></div>
             }
             else if (configItem.type === "STRING") {
-              return <div><StringField configItem={configItem} /></div>
+              return <div><StringField configItem={configItem} setResult={setConfigOpts} results={configOpts}/></div>
             }
           })}
         </DialogContent>
@@ -58,7 +55,7 @@ export default function InsertDialog(props: InsertDialogProps) {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleInsert} color="primary">
+          <Button onClick={props.handleInsert} color="primary">
             Insert
           </Button>
         </DialogActions>

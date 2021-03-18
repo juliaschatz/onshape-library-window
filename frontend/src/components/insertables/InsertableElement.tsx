@@ -23,6 +23,10 @@ interface ElementProps {
     insertable: OnshapeInsertable;
 }
 
+interface ConfigMap {
+  [key: string]: string;
+}
+
 // function PartSVGIcon() {
 //     console.log(PartIcon2);
 //     return (
@@ -37,13 +41,37 @@ interface ElementProps {
 export default function InsertableElement(props: ElementProps) {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
+    const [configOpts, setConfigOpts] = React.useState({});
 
-    var dialog = <InsertDialog insertable={props.insertable} open={open} setOpen={setOpen} />;
-    
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-      setOpen(true);
-      event.preventDefault();
+      setConfigOpts({});
+      if (!props.insertable.config || props.insertable.config.length === 0) {
+        handleInsert();
+      }
+      else {
+        setOpen(true);
+      }
     };
+
+    const handleInsert = () => {
+      setOpen(false);
+      // Collect configuration
+      var configStr = "";
+      for (const key in configOpts) {
+        configStr += `${key}=${(configOpts as any)[key] as string};`
+      }
+      configStr = configStr.substring(0, configStr.length-1);
+      console.log(configStr);
+      
+    };
+
+    var dialog = <InsertDialog 
+                  insertable={props.insertable} 
+                  open={open} 
+                  setOpen={setOpen} 
+                  configOpts={configOpts} 
+                  setConfigOpts={setConfigOpts} 
+                  handleInsert={handleInsert} />;
 
     return (
         <Grid item>
