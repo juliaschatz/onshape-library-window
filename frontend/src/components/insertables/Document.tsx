@@ -8,6 +8,7 @@ import Assembly from './Assembly';
 import { OnshapeDocument } from '../../utils/models/OnshapeDocument'
 import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
 import { getOnshapeInsertables } from '../../utils/apiWrapper';
+import InsertableElement from './InsertableElement';
 
 const useStyles = makeStyles((theme: Theme) => 
     createStyles({
@@ -77,15 +78,9 @@ export default function Document(props: DocumentProps) {
                         alignItems='stretch'
                         spacing={1}
                     >
-                        {expanded && insertables.length > 0 && insertables.map((p, index) => {
-                            if(p.type === 'PART') {
-                                return (<Part part={p} key={p.elementId + p.partId}/>)
-                            }
-                            else if(p.type === 'ASSEMBLY') {
-                                return (<Assembly asm={p} key={p.elementId + index}/>)
-                            } else {
-                                return (<></>)
-                            }
+
+                        {expanded && insertables.length > 0 && insertables.map((p) => {
+                            return <InsertableElement insertable={p} />;
                         })}
                         
                     </Grid>

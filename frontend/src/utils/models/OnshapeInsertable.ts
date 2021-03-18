@@ -1,5 +1,7 @@
+import { Configuration } from './Configuration';
+
 export interface OnshapeInsertable {
-    type: "PART" | "ASSEMBLY";
+    type: "PART" | "ASSEMBLY" | "PARTSTUDIO";
     name: string;
     partId?: string;
     elementId: string;
@@ -8,4 +10,5 @@ export interface OnshapeInsertable {
     visible: boolean;
     ref: number;
     thumb?: string;
+    config?: Configuration[];
 }
