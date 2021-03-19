@@ -1,24 +1,16 @@
-import React from 'react';
 
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
-import { Grid, Paper, SvgIcon, Typography } from "@material-ui/core";
+import { Grid, Paper, Typography } from "@material-ui/core";
 
-import Divider from '@material-ui/core/Divider';
 
-import SettingsInputCompositeIcon from '@material-ui/icons/SettingsInputComposite';
-import SettingsInputHdmiIcon from '@material-ui/icons/SettingsInputHdmi';
-import SettingsInputAntennaIcon from '@material-ui/icons/SettingsInputAntenna';
 
 import useStyles from './styles'
 
 import PartIcon2 from '../../icons/SvgPartIcon'
+import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
 
-const PartIcon = SettingsInputCompositeIcon;
-const AssemblyIcon = SettingsInputHdmiIcon;
-const CompositeIcon = SettingsInputAntennaIcon;
 
 interface PartProps {
-    title: string;
+    part: OnshapeInsertable
 }
 
 // function PartSVGIcon() {
@@ -48,7 +40,7 @@ export default function Part(props: PartProps) {
                     {/* <PartIcon /> */}
                     <PartIcon2 className={classes.icon}/>
                     {/* <Divider flexItem variant='fullWidth' /> */}
-                    <Typography className={classes.title} variant='h5'>{props.title}</Typography>
+                    <Typography className={classes.title} variant='h5'>{props.part.name}</Typography>
                     {/* <Typography variant='h5'></Typography> */}
                     <PartIcon2 className={classes.transparent}/>
                     {/* <Grid item xs={6} sm={12} /> */}

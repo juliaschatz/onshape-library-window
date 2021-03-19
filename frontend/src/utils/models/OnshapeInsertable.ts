@@ -7,4 +7,5 @@ export interface OnshapeInsertable {
     documentId: string;
     visible: boolean;
     ref: number;
+    thumb?: string;
 }

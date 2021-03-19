@@ -3,13 +3,27 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import { load } from "./utils/apiWrapper";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+// load();
+
+// ReactDOM.render(
+//   <React.StrictMode>
+//     <App />
+//   </React.StrictMode>,
+//   document.getElementById('root')
+// );
+
+(async function() {
+  await load();
+  ReactDOM.render(
+   <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+    document.getElementById('root')
 );
+})();
+
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

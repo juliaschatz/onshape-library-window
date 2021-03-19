@@ -1,14 +1,13 @@
-import { Theme, makeStyles, createStyles, Grid, Paper, Accordion, AccordionDetails, AccordionSummary, Typography, withStyles } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
+import { Theme, makeStyles, createStyles, Grid, Accordion, AccordionDetails, AccordionSummary, Typography, withStyles } from '@material-ui/core';
+import { useEffect, useState } from 'react';
 
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import Part from './Part';
 import Assembly from './Assembly';
-import CompositePart from './CompositePart';
 
 import { OnshapeDocument } from '../../utils/models/OnshapeDocument'
 import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
-import { getMkcadDocs, getOnshapeInsertables } from '../../utils/apiWrapper';
+import { getOnshapeInsertables } from '../../utils/apiWrapper';
 
 
 // const useStyles = makeStyles((theme: Theme) => 
@@ -94,12 +93,12 @@ export default function Document(props: DocumentProps) {
             const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
             setInsertables(filtered);
         })();
-    }, [])
+    }, [props.doc.id])
 
 
     return (
         <div className={classes.rootdiv}>
-            <Accordion className={classes.root}>
+            <Accordion className={classes.root} TransitionProps={{ timeout: 100 }}>
                 <AccordionSummaryIconLeft
                     expandIcon={<ExpandMore />}
                     aria-controls="panel1a-content"
@@ -107,7 +106,7 @@ export default function Document(props: DocumentProps) {
                 >
                     <Typography className={classes.heading}>{props.doc.name}</Typography>
                 </AccordionSummaryIconLeft>
-                <AccordionDetails>
+                <AccordionDetails >
                     <Grid
                         container
                         direction="column"
@@ -126,7 +125,17 @@ export default function Document(props: DocumentProps) {
 
                         <CompositePart title="test" /> */}
 
-                        {insertables.length > 0 && insertables.map(p => (<p key={p.elementId}>{p.name}</p>))}
+                        {/* {insertables.length > 0 && insertables.map(p => (<p key={p.elementId + p.partId}>{p.name}</p>))} */}
+                        {insertables.length > 0 && insertables.map(p => {
+                            if(p.type === 'PART') {
+                                return (<Part part={p} key={p.elementId + p.partId}/>)
+                            }
+                            else if(p.type === 'ASSEMBLY') {
+                                return (<Assembly asm={p} key={p.elementId}/>)
+                            } else {
+                                return (<></>)
+                            }
+                        })}
                         
                     </Grid>
                     {/* <Typography>
