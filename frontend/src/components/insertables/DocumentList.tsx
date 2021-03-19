@@ -40,13 +40,15 @@ export default function DocumentList() {
     useEffect(() => {
         (async function() {
             updateDocs(await getMkcadDocs());
+            console.log(docs);
         })();
     }, [])
 
     if (searchText !== '') {
-        console.log(FuzzySearch(searchText, docs));
+        // console.log(FuzzySearch(searchText, docs));
         // console.log('results searched');
-        // filteredResults = FuzzySearch(searchText, docs);
+        filteredResults = FuzzySearch(searchText, docs);
+        console.log(filteredResults);
     }
 
     return (
@@ -63,9 +65,9 @@ export default function DocumentList() {
                     if (searchText === doc.name) return (<Document key={index} doc={doc} />);
                 })} */}
 
-                {/* {filteredResults.length > 0 && filteredResults.map((res, index) => {
+                {filteredResults.length > 0 && filteredResults.map((res, index) => {
                     return (<Document key={index} doc={res.item} />);
-                })} */}
+                })}
 
                 {/* {docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document key={index} doc={doc}/>))} */}
 

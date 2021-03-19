@@ -15,7 +15,7 @@ import { load } from "./utils/apiWrapper";
 // );
 
 (async function() {
-  await load();
+  // await load();
   ReactDOM.render(
    <React.StrictMode>
       <App />
@@ -23,6 +23,8 @@ import { load } from "./utils/apiWrapper";
     document.getElementById('root')
 );
 })();
+
+// load();
 
 
 // If you want to start measuring performance in your app, pass a function

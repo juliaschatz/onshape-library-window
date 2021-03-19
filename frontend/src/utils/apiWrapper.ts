@@ -17,6 +17,9 @@ export async function getMkcadDocs(): Promise<OnshapeDocument[]> {
   // if (onshapeDocs.length === 0) {
   //   onshapeDocs = await getMkcadDocsFromApi();
   // }
+  if (onshapeDocs.length === 0) {
+    await load();
+  }
   return onshapeDocs;
 }
 
