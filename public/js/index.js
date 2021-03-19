@@ -24,6 +24,11 @@ $(document).ready(function() {
   theContext.wvId = theQuery.wvmId;
   theContext.elementId = theQuery.eId;
 
+  if (!theContext.documentId) {
+    $("#message").html("The application encountered an error loading. Please close and reopen the MKCad tab.");
+    throw new Error("Didn't receive query data");
+  }
+
   // Hold onto the current session information
   theContext.verison = 0;
   theContext.microversion = 0;
@@ -39,6 +44,10 @@ $(document).ready(function() {
   var adminButton = $("#toggle-view");
   let searchbar = $("#insert-search");
   let clearSearch = $("#clear-search");
+  let modalClose = $("#close-modal");
+  let modal = $("#configure-modal");
+  let modalInsert = $("#modal-insert");
+  let modalData = $("#config-opts");
 
   var admin = false;
   adminButton.click(function(evt) {
@@ -58,6 +67,10 @@ $(document).ready(function() {
       itemsListContainer.show();
       adminButton.text("Admin");
     }
+  });
+
+  modalClose.click(function() {
+    modal.hide();
   });
 
   $.ajax({
@@ -167,6 +180,7 @@ $(document).ready(function() {
       $(this).siblings("ul").toggle();
     });
     $.ajax('/api/data').then((data) => {
+      console.log(data);
       for (var i = 0; i < data.length; ++i) {
         var item = data[i];
         var h = '<li class="insert-item" data-ref="' + i + '"><img data-ref="'+i+'" class="thumb user" src=""/><span class="item-name">' + item.name + '</li>';
@@ -179,6 +193,7 @@ $(document).ready(function() {
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(data),
         success: function(data) {
+          console.log(data);
           data.forEach((item) => {
             $('img.thumb.user[data-ref='+item.ref+']').attr("src", "data:image/png;base64," + item.thumb);
           });
@@ -187,11 +202,63 @@ $(document).ready(function() {
       $(".insert-item").click(function() {
         var ref = parseInt($(this).data("ref"));
         var item = data[ref];
-        if (item.type === "ASSEMBLY") {
-          insertAssembly(item.documentId, item.versionId, item.elementId);
+        if (item.config.length > 0) {
+          modalInsert.unbind("click");
+          modalData.html("");
+          let i = 0;
+          item.config.forEach((item) => {
+            modalData.append("<label for='config-opt-"+i+"'>" + item.name + ": </label>");
+            if (item.type === "QUANTITY") {
+              modalData.append("<br /><input class='config-opt' type='number' id='config-opt-"+i+"' data-ref='"+i+"' value='"+item.default+"' "
+               + "min='"+item.quantityMin+"' max='"+item.quantityMax+"' " + ((item.quantityType === "INTEGER") ? "step='1'" : "step='any'") + " />");
+              modalData.append("&nbsp;<span class='.input-units'>" + item.quantityUnits + "</span>" );
+            }
+            else if (item.type === "BOOLEAN") {
+              modalData.append("&nbsp;<input class='config-opt' type='checkbox' id='config-opt-"+i+"' data-ref='"+i+"' " + (item.default ? "checked" : "") + " />");
+            }
+            else if (item.type === "STRING") {
+              modalData.append("<br /><input class='config-opt' type='text' id='config-opt-"+i+"' data-ref='"+i+"' value='"+item.default+"' />");
+            }
+            else if (item.type === "ENUM") {
+              let id = 'config-opt-'+i;
+              modalData.append("<br /><select class='config-opt' id='"+id+"' data-ref='"+i+"' value='"+item.default+"'></select>");
+              item.options.forEach((option) => {
+                $("#"+id).append("<option value='"+option.value+"'>"+option.name+"</option>")
+              });
+            }
+            modalData.append("<br />")
+            i += 1;
+          });
+
+          modalInsert.click(function() {
+            let configuration = {};
+            $(".config-opt").each(function() {
+              let i = $(this).data('ref');
+              let conf = item.config[i];
+              if (conf.type === "QUANTITY") {
+                configuration[conf.id] = parseFloat($(this).val()).toFixed(6);
+                if (conf.quantityUnits !== "") {
+                  configuration[conf.id] +=  "+" + conf.quantityUnits;
+                }
+              }
+              else if (conf.type === "BOOLEAN") {
+                configuration[conf.id] = $(this).is(":checked");
+              }
+              else if (conf.type === "ENUM") {
+                configuration[conf.id] = $(this).val();
+              }
+              else if (conf.type === "STRING") {
+                configuration[conf.id] = $(this).val();
+              }
+            });
+            doInsert(item.type, item.documentId, item.versionId, item.elementId, configuration, item.partId);
+            modal.hide();
+          });
+
+          modal.show();
         }
-        else if (item.type === "PART") {
-          insertPart(item.documentId, item.versionId, item.elementId, item.partId);
+        else {
+          doInsert(item.type, item.documentId, item.versionId, item.elementId, null, item.partId);
         }
       });
 
@@ -244,58 +311,39 @@ $(document).ready(function() {
   });
 });
 
-function getThumb(item, element) {
-  var targetUrl;
-  if (item.type === "ASSEMBLY") {
-    targetUrl = "/api/assemThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId;
+function encodeConfiguration(config) {
+  if (!config || config === null || config === undefined) {
+    return "";
   }
-  else if (item.type === "PART") {
-    targetUrl = "/api/partThumb?documentId=" + item.documentId + "&versionId=" + item.versionId + "&elementId=" + item.elementId + "&partId=" + item.partId;
-  }
-
-  var setThumb = (thumb) => {
-    element.attr("src", "data:image/jpeg;base64," + thumb);
-  }
-  $.get(targetUrl).then(setThumb);
-}
-
-function insertAssembly(sourceDocId, sourceVersionId, sourceAssemId) {
-  $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
-  {
-    method: "POST",
-    contentType: "application/json; charset=utf-8",
-    data: JSON.stringify({
-      "documentId": sourceDocId,
-      "elementId": sourceAssemId,
-      "featureId": "",
-      "isAssembly": true,
-      "isWholePartStudio": false,
-      "microversionId": "",
-      "partId": "",
-      "versionId": sourceVersionId
-    }),
-    success: function() {
-      console.log("Inserted!");
-    }
-  }).fail(function(err) {
-    console.log("Insert failed")
+  let keys = Object.keys(config);
+  let confStr = "";
+  keys.forEach((id) => {
+    confStr += id + "=" + config[id];
+    confStr += ";";
   });
+  confStr = confStr.slice(0, -1); // Remove trailing ;
+  console.log(confStr);
+  return confStr;
 }
 
-function insertPart(sourceDocId, sourceVersionId, sourceElementId, sourcePartId) {
+function doInsert(type, sourceDocId, sourceVersionId, sourceElemId, configuration, partId) {
+  if (partId === undefined) {
+    partId = "";
+  }
   $.ajax('/api/insert?documentId=' + theContext.documentId + "&elementId=" + theContext.elementId + "&workspaceId=" + theContext.wvId,
   {
     method: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify({
       "documentId": sourceDocId,
-      "elementId": sourceElementId,
-      "isAssembly": false,
-      "isWholePartStudio": false,
-      "isPart": true,
+      "elementId": sourceElemId,
+      "featureId": "",
+      "isAssembly": type === "ASSEMBLY",
+      "isWholePartStudio": type === "PARTSTUDIO",
       "microversionId": "",
-      "partId": sourcePartId,
-      "versionId": sourceVersionId
+      "partId": partId,
+      "versionId": sourceVersionId,
+      "configuration": encodeConfiguration(configuration)
     }),
     success: function() {
       console.log("Inserted!");
@@ -366,44 +414,3 @@ function onDomLoaded() {
 // When we are loaded, start the Onshape client messageing
 document.addEventListener("DOMContentLoaded", onDomLoaded);
 
-//
-// Simple alert infrasturcture
-function displayAlert(message) {
-  $("#alert_template span").remove();
-  $("#alert_template button").after('<span>' + message + '<br></span>');
-  $('#alert_template').fadeIn('slow');
-  $('#alert_template .close').click(function(ee) {
-    $("#alert_template").hide();
-    $("#alert_template span").hide();
-  });
-}
-
-var Subscribed = true;
-
-//
-// Check to see if the user is subscribed to this application
-function checkSubscription() {
-  // Make sure the user is subscribed
-  return new Promise(function(resolve, reject) {
-    $.ajax('/api/accounts', {
-      dataType: 'json',
-      type: 'GET',
-      success: function(data) {
-        var object = data;
-
-        Subscribed = object.Subscribed;
-
-        // If there is no active subscription, then block the Create button.
-        if (Subscribed == false) {
-          displayAlert('No active subscription for this application. Check the Onshape App Store.');
-          var b = document.getElementById("element-generate");
-          b.disabled = true;
-
-          reject(0);
-        }
-        else
-          resolve(1);
-      }
-    });
-  });
-}

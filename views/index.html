@@ -19,6 +19,7 @@
   <script src="js/index.js"></script>
 
   <body>
+    <span id="message"></span>
     <div id="menu">
       <button id="clear-search">X</button> 
       <input class="searchbar" type="text" id="insert-search" placeholder="Search..." />
@@ -29,11 +30,24 @@
       <button id="save">Save Document</button>
       <span id="status"></span>
     </div>
+
     <div class="container" id="insert-list-container">
       <ul id="insert-list" class="insert-list">
 
       </ul>
     </div>
+
+    <div class="modal" id="configure-modal" style="display:none">
+      <div class="modal-content">
+        <span id="close-modal">&times;</span>
+        <div id="config-opts">
+
+        </div>
+        <br />
+        <button id="modal-insert">Insert</button>
+      </div>
+    </div>
+
     <div class="container" id="doc-list-container" style="display:none;">
       <ul id="doc-list">
 

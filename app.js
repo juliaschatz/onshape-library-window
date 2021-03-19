@@ -13,6 +13,7 @@ var http = require('http');
 var uuid = require('uuid');
 var fs = require('fs');
 var storage = require('node-persist');
+const url = require('url');
 
 
 var api = require('./routes/api');
@@ -53,6 +54,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.engine('html', require('hbs').__express);
 app.set('view engine', 'html');
 
+app.disable('etag');
+
 var env = process.env.NODE_ENV || 'development';
 app.locals.ENV = env;
 app.locals.ENV_DEVELOPMENT = env == 'development';
@@ -91,7 +94,7 @@ function ensureAuthenticated(req, res, next) {
     res.status(200);
     return next()
   }
-  res.status(401).redirect('/oauthRedirect');
+  res.status(401).redirect('/oauthSignin' + url.parse(req.url,true).search);
 }
 
 app.use('/api', api);
@@ -113,20 +116,17 @@ app.use('/oauthSignin', storeExtraParams,
 );
 
 function storeExtraParams(req, res) {
-  var docId = req.query.documentId;
-  var workId = req.query.workspaceId;
-  var elId = req.query.elementId;
   var redirect = req.query.redirectOnshapeUri;
+  if (redirect === undefined) {
+    redirect = "/" + url.parse(req.url,true).search;
+  }
 
   var state = {
-    documentId : docId,
-    workspaceId : workId,
-    elementId : elId,
     redirect: redirect
   };
 
   var stateString = JSON.stringify(state);
-  var uniqueID = "state" + passport.session();
+  var uniqueID = "state" + req.sessionID;
   client.set(uniqueID, stateString);
 
   return passport.authenticate("onshape")(req, res);
@@ -140,13 +140,20 @@ function storeExtraParams(req, res) {
 app.use('/oauthRedirect',
     passport.authenticate('onshape', { failureRedirect: '/grantDenied' }),
     function(req, res) {
-      var uniqueID = "state" + passport.session();
+      var uniqueID = "state" + req.sessionID;
       client.get(uniqueID, function(err, reply) {
         // reply is null when the key is missing
         if (reply != null) {
           
           var newParams = JSON.parse(reply);
           res.redirect(newParams.redirect);
+        }
+        else {
+          var querystring = url.parse(req.url,true).search;
+          if (querystring === null || querystring === undefined) {
+            querystring = "";
+          }
+          res.redirect("/" + querystring);
         }
       });
     });
