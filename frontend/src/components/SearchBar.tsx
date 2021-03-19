@@ -4,9 +4,9 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 
 import { Autocomplete } from "@material-ui/lab";
-import { Checkbox, TextField } from '@material-ui/core';
+import { Checkbox, TextField } from "@material-ui/core";
 
-import './SearchBar.css'
+import "./SearchBar.css";
 
 import { searchOptionsState, searchTextState } from "../utils/atoms";
 import { useSetRecoilState } from 'recoil';
@@ -17,17 +17,17 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     search: {
-      position: 'relative',
+      position: "relative",
       borderRadius: theme.shape.borderRadius,
       backgroundColor: fade(theme.palette.common.white, 0.15),
       marginLeft: 0,
-      width: '100%',
-      [theme.breakpoints.up('sm')]: {
-        width: 'auto',
+      width: "100%",
+      [theme.breakpoints.up("sm")]: {
+        width: "auto",
       },
     },
     searchColor: {
-      color: 'white'
+      color: "white"
     }
   }),
 );

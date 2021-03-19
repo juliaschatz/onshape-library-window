@@ -25,5 +25,5 @@ export default function Assembly(props: AssemblyProps) {
         </Grid>
       </Paper>
     </Grid>
-  )
+  );
 }

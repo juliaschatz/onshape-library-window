@@ -1,8 +1,9 @@
 import { makeStyles, Theme, createStyles } from '@material-ui/core';
+import classes from "*.module.css";
 // import React from 'react';
-import DocumentList from './components/insertables/DocumentList';
-import SearchBar from './components/SearchBar';
-import './styles.css'
+import DocumentList from "./components/insertables/DocumentList";
+import SearchBar from "./components/SearchBar";
+import "./styles.css";
 
 import { RecoilRoot } from "recoil";
 

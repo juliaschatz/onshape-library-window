@@ -1,6 +1,6 @@
 import React from "react";
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { Configuration } from "../../utils/models/Configuration";
 import FieldProps from "./FieldProps";
 
@@ -10,21 +10,21 @@ export default function BooleanField(props: FieldProps) {
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
-    var newResult = {...props.results};
+    const newResult = {...props.results};
     newResult[configItem.id] = checked as string;
     props.setResult(newResult);
-  }
+  };
   
   return <FormControlLabel
-            control={
-              <Checkbox
-                checked={checked}
-                onChange={onChange}
-                id={configItem.id}
-                color="primary"
-              />
-            }
-            label={configItem.name}
-          />
+    control={
+      <Checkbox
+        checked={checked}
+        onChange={onChange}
+        id={configItem.id}
+        color="primary"
+      />
+    }
+    label={configItem.name}
+  />;
       
-  }
+}

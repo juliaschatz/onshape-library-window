@@ -37,4 +37,4 @@ export async function getOnshapeThumbsFromApi(insertables: OnshapeInsertable[]):
     return items;
 }
 
-// getOnshapeInsertablesFromApi();
+getOnshapeInsertablesFromApi();

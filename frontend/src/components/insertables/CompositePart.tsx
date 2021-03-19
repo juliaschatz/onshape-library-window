@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 
 import { Grid, Paper, Typography } from "@material-ui/core";
 
-import SettingsInputAntennaIcon from '@material-ui/icons/SettingsInputAntenna';
+import SettingsInputAntennaIcon from "@material-ui/icons/SettingsInputAntenna";
 
-import useStyles from './styles'
+import useStyles from "./styles";
 
-import SvgCompositePartIcon from '../../icons/SvgCompositePartIcon';
+import SvgCompositePartIcon from "../../icons/SvgCompositePartIcon";
 
 
 const CompositeIcon = SettingsInputAntennaIcon;
@@ -38,5 +38,5 @@ export default function CompositePart(props: CompositePartProps) {
         </Grid>
       </Paper>
     </Grid>
-  )
+  );
 }

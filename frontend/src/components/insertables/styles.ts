@@ -1,7 +1,7 @@
 import { makeStyles, Theme, createStyles } from "@material-ui/core";
 
-const iconSize = '1.5em';
-const assemblyIconSize = '2em';
+const iconSize = "1.5em";
+const assemblyIconSize = "2em";
 
 export default makeStyles((theme: Theme) =>
   createStyles({
@@ -9,20 +9,20 @@ export default makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     paper: {
-      padding: '15px',
-      textAlign: 'center',
+      padding: "15px",
+      textAlign: "center",
       color: theme.palette.text.secondary,
-      backgroundColor: '#b0b0b8'
+      backgroundColor: "#b0b0b8"
     },
     title: {
-      color: 'white'
+      color: "white"
     },
     transparent: {
       // display: 'hidden',
       // width: '2em',
       // height: '2em'
       // flexGrow: 
-      visibility: 'hidden',
+      visibility: "hidden",
       width: iconSize,
       height: iconSize
     },

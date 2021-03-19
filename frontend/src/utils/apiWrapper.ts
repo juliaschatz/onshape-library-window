@@ -1,7 +1,7 @@
 import { OnshapeDocument } from "./models/OnshapeDocument";
 import { OnshapeInsertable } from "./models/OnshapeInsertable";
 
-import { getMkcadDocsFromApi, getOnshapeInsertablesFromApi } from './api'
+import { getMkcadDocsFromApi, getOnshapeInsertablesFromApi } from "./api";
 
 let onshapeDocs: OnshapeDocument[] = [];
 let onshapeInsertables: OnshapeInsertable[] = [];
