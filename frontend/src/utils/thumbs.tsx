@@ -1,9 +1,9 @@
 import { OnshapeInsertable } from "./models/OnshapeInsertable";
-import { getOnshapeThumbsFromApi } from './api'
+import { getOnshapeInsertablesThumbsFromApi } from './api'
 
 export async function loadThumbs(insertables: OnshapeInsertable[]) {
     if(!thumbsSaved) {
-        let thumbs = await getOnshapeThumbsFromApi(insertables);
+        let thumbs = await getOnshapeInsertablesThumbsFromApi(insertables);
         saveThumbs(insertables, thumbs);
     }
 }

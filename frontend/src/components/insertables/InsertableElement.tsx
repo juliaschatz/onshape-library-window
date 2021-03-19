@@ -75,11 +75,12 @@ export default function InsertableElement(props: ElementProps) {
         <Grid
           container
           direction="row"
-          justify="space-between"
+          justify="flex-start"
           alignItems="center"
         >
           {props.insertable.type === "ASSEMBLY" ? <AssemblyIcon className={classes.icon}/> : <PartIcon2 className={classes.icon} />}
-          {/* <Divider flexItem variant='fullWidth' /> */}
+          {props.insertable.thumb && <img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} />}
+          {<Divider flexItem variant='fullWidth' />}
           <Typography className={classes.title} variant='h5'>{props.insertable.name}</Typography>
           {/* <Typography variant='h5'></Typography> */}
           <PartIcon2 className={classes.transparent}/>

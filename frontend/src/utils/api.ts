@@ -7,16 +7,17 @@ async function request<T>(endpoint: string): Promise<T> {
     return body;
 }
 
-async function postRequest<T>(endpoint: string, body: Object, contentType: string = 'application/json'): Promise<T> {
-    const resp = await fetch(endpoint, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers: {
-            'Content-Type': contentType
-        }
-    });
-    const res = await resp.json();
-    return res;
+async function post<T>(endpoint: string, data: any): Promise<T> {
+  const res = await fetch(endpoint, {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+  const body = await res.json();
+  return body;
 }
 
 
@@ -27,14 +28,13 @@ export async function getMkcadDocsFromApi(): Promise<OnshapeDocument[]> {
 }
 
 export async function getOnshapeInsertablesFromApi(): Promise<OnshapeInsertable[]> {
-    const docs = await request<OnshapeInsertable[]>("data");
-    console.log(docs);
-    return docs;
+  const docs = await request<OnshapeInsertable[]>("data");
+  return docs;
 }
 
-export async function getOnshapeThumbsFromApi(insertables: OnshapeInsertable[]): Promise<OnshapeInsertable[]> {
-    const items = await postRequest<OnshapeInsertable[]>('thumbs', insertables);
-    return items;
+export async function getOnshapeInsertablesThumbsFromApi(insertables: OnshapeInsertable[]): Promise<OnshapeInsertable[]> {
+  const docs = await post<OnshapeInsertable[]>("thumbs", insertables);
+  return docs;
 }
 
 getOnshapeInsertablesFromApi();

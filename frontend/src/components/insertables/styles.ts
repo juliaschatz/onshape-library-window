@@ -12,10 +12,15 @@ export default makeStyles((theme: Theme) =>
       padding: "15px",
       textAlign: "center",
       color: theme.palette.text.secondary,
-      backgroundColor: "#b0b0b8"
+      backgroundColor: "#b0b0b8",
+      flexGrow: 3
     },
     title: {
       color: "white"
+    },
+    image: {
+      width: "3em",
+      height: "3em",
     },
     transparent: {
       // display: 'hidden',
