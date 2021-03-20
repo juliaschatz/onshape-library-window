@@ -22,12 +22,16 @@ const useStyles = makeStyles((theme: Theme) =>
     }
 ));
 
-export default function DocumentList() {
+interface DocumentListProps {
+  admin: boolean;
+}
+
+export default function DocumentList(props: DocumentListProps) {
     const classes = useStyles();
 
     const [docs, updateDocs] = useState<OnshapeDocument[]>([]);
 
-    let filteredResults: Fuse.FuseResult<OnshapeDocument>[] = [];
+    let filteredResults: OnshapeDocument[] = [];
 
     const searchText = useRecoilValue(searchTextState);
 
@@ -40,8 +44,11 @@ export default function DocumentList() {
     }, [])
 
     if (searchText !== '') {
-        filteredResults = FuzzySearch(searchText, docs);
+        filteredResults = FuzzySearch(searchText, docs).map((res) => res.item);
         console.log(filteredResults);
+    }
+    else {
+      filteredResults = docs;
     }
 
     return (
@@ -51,12 +58,13 @@ export default function DocumentList() {
                 direction='column'
                 justify='flex-end'
                 alignItems='center' 
+                spacing={0}
             >
                 {filteredResults.length > 0 && filteredResults.map((res, index) => {
-                    return (<Document key={index} doc={res.item} />);
+                    return (<Document isLazyAllItems={props.admin} key={index} doc={res} />);
                 })}
 
-                {docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document key={index} doc={doc}/>))}
+                {/*docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document isLazyAllItems={props.admin} key={index} doc={doc}/>))*/}
             </Grid>
         </div>
     )

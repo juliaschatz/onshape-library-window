@@ -74,8 +74,24 @@ export async function getIsAdmin(): Promise<boolean> {
 }
 
 export async function getAllDocumentInsertables(documentId: string): Promise<OnshapeInsertable[]> {
-  const docs = await request<OnshapeInsertable[]>(`api/data?documentId=${documentId}`);
+  const docs = await request<OnshapeInsertable[]>(`api/documentData?documentId=${documentId}`);
   return docs;
+}
+
+export async function publishPart(insertable: OnshapeInsertable, publish: boolean): Promise<boolean> {
+
+  const endpoint = `api/saveDocumentData`;
+  return new Promise<boolean>((resolve, reject) => {
+    const result = post(endpoint, {
+      "item": insertable,
+      "action": publish ? "REPLACE" : "REMOVE",
+      "documentId": insertable.documentId
+    }).then((result) => {
+      resolve(true);
+    }).catch((reason) => {
+      resolve(false);
+    });
+  });
 }
 
 getOnshapeInsertablesFromApi();
