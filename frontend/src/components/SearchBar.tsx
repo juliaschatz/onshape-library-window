@@ -115,7 +115,7 @@ export default function Searchbar(props: SearchbarProps) {
           {props.showAdmin && <Button 
             variant="outlined" 
             color="secondary" 
-            onClick={() => props.setAdmin(!props.isAdmin)}>
+            onClick={() => {props.setAdmin(!props.isAdmin); console.log("aaa"); }}>
               {props.isAdmin ? "User" : "Admin"}
           </Button>}
         </Toolbar>

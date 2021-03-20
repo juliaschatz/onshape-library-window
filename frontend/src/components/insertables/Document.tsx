@@ -100,7 +100,7 @@ export default function Document(props: DocumentProps) {
           >
 
                         {expanded && insertables.length > 0 && insertables.map((p) => {
-                            return <InsertableElement insertable={p} />;
+                            return <InsertableElement insertable={p} isAdminElement={!!props.isLazyAllItems} />;
                         })}
                         
                     </Grid>

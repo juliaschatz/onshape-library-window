@@ -22,7 +22,11 @@ const useStyles = makeStyles((theme: Theme) =>
     }
 ));
 
-export default function DocumentList() {
+interface DocumentListProps {
+  admin: boolean;
+}
+
+export default function DocumentList(props: DocumentListProps) {
     const classes = useStyles();
 
     const [docs, updateDocs] = useState<OnshapeDocument[]>([]);
@@ -52,11 +56,11 @@ export default function DocumentList() {
                 justify='flex-end'
                 alignItems='center' 
             >
-                {filteredResults.length > 0 && filteredResults.map((res, index) => {
+                {/*filteredResults.length > 0 && filteredResults.map((res, index) => {
                     return (<Document key={index} doc={res.item} />);
-                })}
+                })*/}
 
-                {docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document key={index} doc={doc}/>))}
+                {docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document isLazyAllItems={props.admin} key={index} doc={doc}/>))}
             </Grid>
         </div>
     )
