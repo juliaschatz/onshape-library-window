@@ -31,7 +31,7 @@ export default function DocumentList(props: DocumentListProps) {
 
     const [docs, updateDocs] = useState<OnshapeDocument[]>([]);
 
-    let filteredResults: Fuse.FuseResult<OnshapeDocument>[] = [];
+    let filteredResults: OnshapeDocument[] = [];
 
     const searchText = useRecoilValue(searchTextState);
 
@@ -44,8 +44,11 @@ export default function DocumentList(props: DocumentListProps) {
     }, [])
 
     if (searchText !== '') {
-        filteredResults = FuzzySearch(searchText, docs);
+        filteredResults = FuzzySearch(searchText, docs).map((res) => res.item);
         console.log(filteredResults);
+    }
+    else {
+      filteredResults = docs;
     }
 
     return (
@@ -55,12 +58,13 @@ export default function DocumentList(props: DocumentListProps) {
                 direction='column'
                 justify='flex-end'
                 alignItems='center' 
+                spacing={0}
             >
-                {/*filteredResults.length > 0 && filteredResults.map((res, index) => {
-                    return (<Document key={index} doc={res.item} />);
-                })*/}
+                {filteredResults.length > 0 && filteredResults.map((res, index) => {
+                    return (<Document isLazyAllItems={props.admin} key={index} doc={res} />);
+                })}
 
-                {docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document isLazyAllItems={props.admin} key={index} doc={doc}/>))}
+                {/*docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document isLazyAllItems={props.admin} key={index} doc={doc}/>))*/}
             </Grid>
         </div>
     )

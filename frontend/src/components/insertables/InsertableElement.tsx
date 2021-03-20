@@ -1,7 +1,7 @@
 import React from "react";
 
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
-import { Grid, Paper, SvgIcon, Typography } from "@material-ui/core";
+import { Grid, Paper, SvgIcon, Typography, ButtonBase } from "@material-ui/core";
 
 import Divider from "@material-ui/core/Divider";
 
@@ -29,17 +29,6 @@ interface ElementProps {
     insertable: OnshapeInsertable;
     isAdminElement: boolean;
 }
-
-// function PartSVGIcon() {
-//     console.log(PartIcon2);
-//     return (
-//         <>
-//             <SvgIcon viewBox="0 0 50 50" color='primary'>
-//                 {PartIcon2}
-//             </SvgIcon>
-//         </>
-//     )
-// }
 
 export default function InsertableElement(props: ElementProps) {
   const classes = useStyles();
@@ -105,18 +94,21 @@ export default function InsertableElement(props: ElementProps) {
 
   return (
     <Grid item>
-      <Paper className={classes.paper} onClick={handleClick}>
+      <ButtonBase className={classes.itemBase} onClick={handleClick}>
+      <Paper className={classes.paper}>
         <Grid
           container
           direction="row"
           justify="flex-start"
           alignItems="center"
+          style={{height: "100%"}}
         >
+          
           {props.insertable.type === "ASSEMBLY" ? <AssemblyIcon className={classes.icon}/> : <PartIcon2 className={classes.icon} />}
           {props.insertable.thumb && <img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} />}
           {<Divider flexItem variant='fullWidth' />}
-          <Typography className={classes.title} variant='subtitle1'>{props.insertable.name}</Typography>
-          {props.isAdminElement && !overrideUpdate && props.insertable.versionId !== props.insertable.lastVersion && <Button
+          <div style={{height: "100%", maxWidth: "90%", flexGrow: 1}}><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div>
+          {props.isAdminElement && !overrideUpdate && isPublished && props.insertable.versionId !== props.insertable.lastVersion && <Button
             variant="contained"
             color="primary"
             size="small"
@@ -129,8 +121,10 @@ export default function InsertableElement(props: ElementProps) {
           {loading && <CircularProgress />}
           <PartIcon2 className={classes.transparent}/>
           {/* <Grid item xs={6} sm={12} /> */}
+          
         </Grid>
       </Paper>
+      </ButtonBase>
       {dialog}
     </Grid>
         

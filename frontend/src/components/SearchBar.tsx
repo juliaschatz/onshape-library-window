@@ -5,6 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 
 import { Autocomplete } from "@material-ui/lab";
 import { Button, Checkbox, TextField } from "@material-ui/core";
+import { SwapHoriz } from "@material-ui/icons";
 
 import "./SearchBar.css";
 
@@ -50,7 +51,7 @@ export default function Searchbar(props: SearchbarProps) {
 
   return (
     <div >
-      <AppBar position="static">
+      <AppBar position="static" color={props.isAdmin ? "secondary" : "primary"}>
         <Toolbar>
           <div className={classes.search}>
             <Autocomplete
@@ -113,9 +114,9 @@ export default function Searchbar(props: SearchbarProps) {
             />
           </div>
           {props.showAdmin && <Button 
-            variant="outlined" 
-            color="secondary" 
-            onClick={() => {props.setAdmin(!props.isAdmin); console.log("aaa"); }}>
+            startIcon={<SwapHoriz />}
+            color="inherit" 
+            onClick={() => props.setAdmin(!props.isAdmin)}>
               {props.isAdmin ? "User" : "Admin"}
           </Button>}
         </Toolbar>

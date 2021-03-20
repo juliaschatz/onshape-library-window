@@ -53,15 +53,32 @@ export default function Document(props: DocumentProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expanded, setExpanded] = useState(false);
 
+
+  const resetInsertables = () => {
+    getOnshapeInsertables().then((allInsertables) => {
+      const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+      setInsertables(filtered);
+    });
+  };
+
   useEffect(() => {
     (async function () {
       if (!props.isLazyAllItems) {
-        const allInsertables = await getOnshapeInsertables();
-        const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
-        setInsertables(filtered);
+        resetInsertables();
       }
     })();
   }, [props.doc.id]);
+
+  useEffect(() => {
+    (async function () {
+      setExpanded(false);
+      setLatched(false);
+      setInsertables([]);
+      if (!props.isLazyAllItems) {
+        resetInsertables();
+      }
+    })();
+  }, [props.isLazyAllItems]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (props.isLazyAllItems && !latched) {
@@ -79,6 +96,7 @@ export default function Document(props: DocumentProps) {
   return (
     <div className={classes.rootdiv}>
       <Accordion className={classes.root} TransitionProps={{ timeout: 400 }}
+        expanded={expanded}
         onChange={() => setExpanded(!expanded)}
       >
         <AccordionSummaryIconLeft

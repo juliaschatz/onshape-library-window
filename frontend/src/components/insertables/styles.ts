@@ -13,7 +13,11 @@ export default makeStyles((theme: Theme) =>
       textAlign: "center",
       color: theme.palette.text.secondary,
       backgroundColor: "#b0b0b8",
-      flexGrow: 3
+      flexGrow: 1,
+      height: "3em"
+    },
+    itemBase: {
+      width: "100%"
     },
     title: {
       color: "white"
