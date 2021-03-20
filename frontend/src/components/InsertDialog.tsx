@@ -33,7 +33,7 @@ export default function InsertDialog(props: InsertDialogProps) {
 
   return (
     <div>
-      <Dialog open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
+      <Dialog open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title" maxWidth="lg" >
         <DialogTitle id="form-dialog-title">Insert</DialogTitle>
         <DialogContent>
           {insertable.config && insertable.config.map((configItem) => {

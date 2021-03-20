@@ -15,6 +15,10 @@ import PartIcon2 from "../../icons/SvgPartIcon";
 import InsertDialog from "../InsertDialog";
 import { OnshapeInsertable } from "../../utils/models/OnshapeInsertable";
 
+import { CircularProgress } from '@material-ui/core';
+
+import { insertPart } from "../../utils/api"
+
 const PartIcon = SettingsInputCompositeIcon;
 const AssemblyIcon = SettingsInputHdmiIcon;
 const CompositeIcon = SettingsInputAntennaIcon;
@@ -37,6 +41,7 @@ interface ElementProps {
 export default function InsertableElement(props: ElementProps) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   const [configOpts, setConfigOpts] = React.useState({});
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -58,7 +63,13 @@ export default function InsertableElement(props: ElementProps) {
     }
     configStr = configStr.substring(0, configStr.length-1);
     console.log(configStr);
-      
+    var t0 = performance.now();
+    setLoading(true);
+    insertPart(props.insertable, configStr).then((result: boolean) => {
+      var t1 = performance.now();
+      console.log(`Result: ${result}. ${t1 - t0} ms`);
+      setLoading(false);
+    });
   };
 
   const dialog = <InsertDialog 
@@ -81,8 +92,8 @@ export default function InsertableElement(props: ElementProps) {
           {props.insertable.type === "ASSEMBLY" ? <AssemblyIcon className={classes.icon}/> : <PartIcon2 className={classes.icon} />}
           {props.insertable.thumb && <img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} />}
           {<Divider flexItem variant='fullWidth' />}
-          <Typography className={classes.title} variant='h5'>{props.insertable.name}</Typography>
-          {/* <Typography variant='h5'></Typography> */}
+          <Typography className={classes.title} variant='subtitle1'>{props.insertable.name}</Typography>
+          {loading && <CircularProgress />}
           <PartIcon2 className={classes.transparent}/>
           {/* <Grid item xs={6} sm={12} /> */}
         </Grid>

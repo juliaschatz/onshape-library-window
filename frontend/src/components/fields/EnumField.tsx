@@ -23,6 +23,7 @@ export default function EnumField(props: FieldProps) {
       id={configItem.id}
       value={value}
       onChange={onChange}
+      style={{minWidth: 120}}
     >
       {configItem.options && configItem.options.map((opt) => {
         return <MenuItem value={opt.value}>{opt.name}</MenuItem>;

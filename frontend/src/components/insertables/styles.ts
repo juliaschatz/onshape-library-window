@@ -9,7 +9,7 @@ export default makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     paper: {
-      padding: "15px",
+      padding: "3px",
       textAlign: "center",
       color: theme.palette.text.secondary,
       backgroundColor: "#b0b0b8",
