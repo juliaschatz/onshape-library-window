@@ -62,4 +62,20 @@ export async function getOnshapeInsertablesThumbsFromApi(insertables: OnshapeIns
   return docs;
 }
 
+export async function getIsAdmin(): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    request<{auth: boolean}>("api/isAdmin").then((result) => {
+      resolve(result.auth);
+    }).catch(() => {
+      var redirect = `/oauthSignin?redirectOnshapeUri=${encodeURIComponent(window.location.href)}`;
+      window.location.href = redirect;
+    })
+  });
+}
+
+export async function getAllDocumentInsertables(documentId: string): Promise<OnshapeInsertable[]> {
+  const docs = await request<OnshapeInsertable[]>(`api/data?documentId=${documentId}`);
+  return docs;
+}
+
 getOnshapeInsertablesFromApi();

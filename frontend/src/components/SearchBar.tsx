@@ -4,7 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 
 import { Autocomplete } from "@material-ui/lab";
-import { Checkbox, TextField } from "@material-ui/core";
+import { Button, Checkbox, TextField } from "@material-ui/core";
 
 import "./SearchBar.css";
 
@@ -15,13 +15,14 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     grow: {
       flexGrow: 1,
+      flexShrink: 3
     },
     search: {
+      flexGrow: 1,
       position: "relative",
       borderRadius: theme.shape.borderRadius,
       backgroundColor: fade(theme.palette.common.white, 0.15),
       marginLeft: 0,
-      width: "100%",
       [theme.breakpoints.up("sm")]: {
         width: "auto",
       },
@@ -32,7 +33,14 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export default function Searchbar() {
+interface SearchbarProps {
+  isAdmin: boolean;
+  setAdmin: (admin: boolean) => void;
+  showAdmin: boolean;
+}
+
+
+export default function Searchbar(props: SearchbarProps) {
   const classes = useStyles();
 
   const input = useRef(null);
@@ -44,7 +52,6 @@ export default function Searchbar() {
     <div >
       <AppBar position="static">
         <Toolbar>
-          <div className={classes.grow} />
           <div className={classes.search}>
             <Autocomplete
               ref={input}
@@ -66,7 +73,6 @@ export default function Searchbar() {
                   {option.title}
                 </React.Fragment>
               )}
-              style={{ width: 600 }}
               onChange={(event, values) => {
                 console.log(values);
 
@@ -106,7 +112,12 @@ export default function Searchbar() {
               )}
             />
           </div>
-          <div className={classes.grow} />
+          {props.showAdmin && <Button 
+            variant="outlined" 
+            color="secondary" 
+            onClick={() => props.setAdmin(!props.isAdmin)}>
+              {props.isAdmin ? "User" : "Admin"}
+          </Button>}
         </Toolbar>
       </AppBar>
     </div>
