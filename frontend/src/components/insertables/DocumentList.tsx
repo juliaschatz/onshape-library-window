@@ -12,6 +12,8 @@ import { search as FuzzySearch } from '../../utils/fuzzySearch'
 
 import Fuse from 'fuse.js'
 
+import { FixedSizeList } from 'react-window'
+
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -19,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) =>
             // display: 'flex',
             // justifyContent: 'center',
             // alignItems: 'stretch'
-            paddingTop: '15px',
+            paddingTop: '0px',
             flexGrow: 1,
             
         },
@@ -69,9 +71,26 @@ export default function DocumentList() {
                     return (<Document key={index} doc={res.item} />);
                 })}
 
-                {/* {docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document key={index} doc={doc}/>))} */}
+                {docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document key={index} doc={doc}/>))}
+
+                {/* <FixedSizeList
+                    height={710}
+                    itemSize={70}
+                    width={'100%'}
+                    itemCount={filteredResults.length}
+                    
+
+                >
+                    {({ index, style }) => {
+                        // return (<p>{index}</p>);
+                        // return (<Document key={index} doc={docs[index]} style={style}/>)
+                        return (<Document key={index} doc={filteredResults[index].item} style={style} />);
+                    }}
+
+                </FixedSizeList> */}
 
             </Grid>
         </div>
     )
 }
+

@@ -79,13 +79,16 @@ const AccordionSummaryIconLeft = withStyles({
 })(AccordionSummary);
 
 interface DocumentProps {
-    doc: OnshapeDocument
+    doc: OnshapeDocument;
+    // style: React.CSSProperties;
 }
 
 export default function Document(props: DocumentProps) {
     const classes = useStyles();
 
     const [insertables, setInsertables] = useState<OnshapeInsertable[]>([]);
+
+    const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         (async function () {
@@ -97,8 +100,10 @@ export default function Document(props: DocumentProps) {
 
 
     return (
-        <div className={classes.rootdiv}>
-            <Accordion className={classes.root} TransitionProps={{ timeout: 100 }}>
+        <div className={classes.rootdiv} >
+            <Accordion className={classes.root} TransitionProps={{ timeout: 400 }}
+                onChange={() => setExpanded(!expanded)}
+            >
                 <AccordionSummaryIconLeft
                     expandIcon={<ExpandMore />}
                     aria-controls="panel1a-content"
@@ -126,12 +131,12 @@ export default function Document(props: DocumentProps) {
                         <CompositePart title="test" /> */}
 
                         {/* {insertables.length > 0 && insertables.map(p => (<p key={p.elementId + p.partId}>{p.name}</p>))} */}
-                        {insertables.length > 0 && insertables.map(p => {
+                        {expanded && insertables.length > 0 && insertables.map((p, index) => {
                             if(p.type === 'PART') {
                                 return (<Part part={p} key={p.elementId + p.partId}/>)
                             }
                             else if(p.type === 'ASSEMBLY') {
-                                return (<Assembly asm={p} key={p.elementId}/>)
+                                return (<Assembly asm={p} key={p.elementId + index}/>)
                             } else {
                                 return (<></>)
                             }

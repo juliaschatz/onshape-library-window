@@ -55,6 +55,7 @@ export default function Searchbar() {
               ref={input}
               multiple
               disableCloseOnSelect
+              clearOnBlur={false}
               options={searchOptions}
               limitTags={3}
               classes={{
@@ -66,10 +67,10 @@ export default function Searchbar() {
                 <React.Fragment>
                   <Checkbox
                     checked={selected}
-                    onChange={(e) => {
-                      console.log('search val changed')
-                      setSearch(e.target.value);
-                    }}
+                    // onChange={(e) => {
+                    //   console.log('search val changed')
+                    //   setSearch(e.target.value);
+                    // }}
                   />
                   {option.title}
                 </React.Fragment>
@@ -108,6 +109,7 @@ export default function Searchbar() {
                   // InputProps={{className: classes.searchColor}}
                   variant="outlined"
                   placeholder="Search"
+                  
                   onChange={(event) => {
                     // console.log(event.target.value);
                     setSearch(event.target.value);
