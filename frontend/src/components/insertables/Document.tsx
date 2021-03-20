@@ -9,49 +9,11 @@ import { OnshapeDocument } from '../../utils/models/OnshapeDocument'
 import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
 import { getOnshapeInsertables } from '../../utils/apiWrapper';
 
-
-// const useStyles = makeStyles((theme: Theme) => 
-//     createStyles({
-//         root: {
-//             // display: 'flex',
-//             background: 'gray',
-//             // width: '800',
-//             // flexGrow: 1
-//             // flexBasis: 'auto'
-            
-//         },
-//         grow: {
-//             flexGrow: 1
-//         },
-//         card: {
-//             background: 'gray',
-//             // paddingLeft: '20%'
-            
-//         },
-//         details: {
-//             display: 'flex',
-//             flexDirection: 'column',
-//         },
-//         paper: {
-//             // flex: '1 0 auto',
-//             padding: theme.spacing(2),
-//             width: '90%',
-//             backgroundColor: 'gray'
-
-//         },
-//         iconStyle: {
-//             width: iconSize,
-//             height: iconSize,
-//         }
-//     }
-// ));
-
 const useStyles = makeStyles((theme: Theme) => 
     createStyles({
         root: {
             width: '100%',
             paddingTop: '0px',
-            // backgroundColor: 'gray'
         },
         rootdiv: {
             width: '100%',
@@ -61,10 +23,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         heading: {
             fontSize: theme.typography.pxToRem(15),
-            fontWeight: theme.typography.fontWeightRegular,
-            // color: 'white',
-
-            
+            fontWeight: theme.typography.fontWeightRegular, 
         },
     })
 );
@@ -80,7 +39,6 @@ const AccordionSummaryIconLeft = withStyles({
 
 interface DocumentProps {
     doc: OnshapeDocument;
-    // style: React.CSSProperties;
 }
 
 export default function Document(props: DocumentProps) {
@@ -119,18 +77,6 @@ export default function Document(props: DocumentProps) {
                         alignItems='stretch'
                         spacing={1}
                     >
-                        {/* <Part title='test'/>
-                        <Part title='test title 2'/>
-                        <Part title='17t Sprocket'/>
-                        <Part title='18t Sprocket'/>
-                        <Part title='42t 20dp Gear'/>
-                        <Part title='VersaHub' />
-                        
-                        <Assembly title='wcp gearbox' />
-
-                        <CompositePart title="test" /> */}
-
-                        {/* {insertables.length > 0 && insertables.map(p => (<p key={p.elementId + p.partId}>{p.name}</p>))} */}
                         {expanded && insertables.length > 0 && insertables.map((p, index) => {
                             if(p.type === 'PART') {
                                 return (<Part part={p} key={p.elementId + p.partId}/>)
@@ -143,10 +89,6 @@ export default function Document(props: DocumentProps) {
                         })}
                         
                     </Grid>
-                    {/* <Typography>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
-                        sit amet blandit leo lobortis eget.
-                    </Typography> */}
                 </AccordionDetails>
             </Accordion>
         </div>
