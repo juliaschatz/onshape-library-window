@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { fade, makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -40,6 +40,7 @@ interface SearchbarProps {
   showAdmin: boolean;
 }
 
+let clearRef: HTMLButtonElement | undefined = undefined;
 
 export default function Searchbar(props: SearchbarProps) {
   const classes = useStyles();
@@ -51,6 +52,17 @@ export default function Searchbar(props: SearchbarProps) {
   const setSearchOptions = useSetRecoilState(searchOptionsState);
 
   const search = useRecoilValue(searchTextState);
+
+
+  
+  useEffect(() => {
+    console.log(document.querySelectorAll('button'));
+    let button = document.querySelectorAll('button')[0];
+    clearRef = button;
+    button.addEventListener('click', () => {
+      setSearch('');
+    });
+  }, []);
 
   return (
     <div >
@@ -69,6 +81,10 @@ export default function Searchbar(props: SearchbarProps) {
               classes={{
                 input: classes.searchColor
               }}
+
+
+
+
               color="white"
               getOptionLabel={(o: SearchOption) => o.title}
 
@@ -113,11 +129,12 @@ export default function Searchbar(props: SearchbarProps) {
                 <TextField
                   {...params}
                   variant="outlined"
-                  // defaultValue="teeest"
                   placeholder="Search"
+                  autoFocus
                   onChange={(event) => {
-                    // search = event.target.value;
-                    // console.log(params);
+                    // extremely jank way of keeping clear button visible but who cares 
+                    clearRef?.classList.add('MuiAutocomplete-clearIndicatorDirty');
+
                     setSearch(event.target.value);
                   }}
                 />
