@@ -109,6 +109,9 @@ export default function Document(props: DocumentProps) {
     if ((searchOptions.part === (p.type === "PART") || searchOptions.part === (p.type === 'PARTSTUDIO')) && searchOptions.asm === (p.type === "ASSEMBLY") && searchOptions.config === (p.config.length > 0)) {
       return true;
     }
+    if (searchOptions.config && !searchOptions.part && !searchOptions.asm && p.type === 'ASSEMBLY') {
+      return true;
+    }
     return false;
   });
 
@@ -122,6 +125,10 @@ export default function Document(props: DocumentProps) {
   }
   else {
     searchedInsertables = filtered;
+  }
+
+  if (searchedInsertables.length === 0 && !props.isLazyAllItems) {
+    return (<></>);
   }
 
   return (

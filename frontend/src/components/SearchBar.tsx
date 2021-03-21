@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { fade, makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -10,7 +10,7 @@ import { SwapHoriz } from "@material-ui/icons";
 import "./SearchBar.css";
 
 import { searchOptionsState, searchTextState } from "../utils/atoms";
-import { useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -40,6 +40,7 @@ interface SearchbarProps {
   showAdmin: boolean;
 }
 
+let clearRef: HTMLButtonElement | undefined = undefined;
 
 export default function Searchbar(props: SearchbarProps) {
   const classes = useStyles();
@@ -47,12 +48,27 @@ export default function Searchbar(props: SearchbarProps) {
   const input = useRef(null);
 
   const setSearch = useSetRecoilState(searchTextState);
+
   const setSearchOptions = useSetRecoilState(searchOptionsState);
+
+  const search = useRecoilValue(searchTextState);
+
+
+  
+  useEffect(() => {
+    let button = document.querySelectorAll('button')[0];
+    clearRef = button;
+    button.addEventListener('click', () => {
+      setSearch('');
+    });
+  }, []);
 
   return (
     <div >
       <AppBar position="static" color={props.isAdmin ? "secondary" : "primary"}>
         <Toolbar>
+
+
           <div className={classes.search}>
             <Autocomplete
               ref={input}
@@ -64,20 +80,29 @@ export default function Searchbar(props: SearchbarProps) {
               classes={{
                 input: classes.searchColor
               }}
+
+
+
+
               color="white"
               getOptionLabel={(o: SearchOption) => o.title}
 
               filterOptions={(options, state) => options}
+              
+              inputValue={search}
 
               renderOption={(option, { selected }) => {
-                return (<React.Fragment>
-                  <Checkbox
-                    checked={selected}
-                  />
+                return (
+                  <React.Fragment>
+                    <Checkbox
+                      checked={selected}
+                    />
                   {option.title}
-                </React.Fragment>)
+                  </React.Fragment>)
               }}
               onChange={(event, values) => {
+                console.log(search);
+
                 let options = {
                   part: false,
                   asm: false,
@@ -100,16 +125,24 @@ export default function Searchbar(props: SearchbarProps) {
               }}
 
               renderInput={(params) => (
-                <TextField {...params}
+                <TextField
+                  {...params}
                   variant="outlined"
                   placeholder="Search"
+                  autoFocus
                   onChange={(event) => {
+                    // extremely jank way of keeping clear button visible but who cares 
+                    clearRef?.classList.add('MuiAutocomplete-clearIndicatorDirty');
+
                     setSearch(event.target.value);
                   }}
                 />
               )}
             />
           </div>
+
+
+
           {props.showAdmin && <Button 
             startIcon={<SwapHoriz />}
             color="inherit" 
