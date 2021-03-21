@@ -127,6 +127,10 @@ export default function Document(props: DocumentProps) {
     searchedInsertables = filtered;
   }
 
+  if (searchedInsertables.length === 0) {
+    return (<></>);
+  }
+
   return (
     <div className={classes.rootdiv}>
       <Accordion className={classes.root} TransitionProps={{ timeout: 400 }}
