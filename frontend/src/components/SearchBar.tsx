@@ -56,7 +56,6 @@ export default function Searchbar(props: SearchbarProps) {
 
   
   useEffect(() => {
-    console.log(document.querySelectorAll('button'));
     let button = document.querySelectorAll('button')[0];
     clearRef = button;
     button.addEventListener('click', () => {
