@@ -79,7 +79,7 @@ export default function DocumentList(props: DocumentListProps) {
                 alignItems='center' 
                 spacing={0}
             >
-                {filteredResults.length > 0 && filteredResults.map((res, index) => {
+                {filteredResults.length > 0 && filteredResults.sort((a, b) => a.name.localeCompare(b.name)).map((res, index) => {
                     return (<Document isLazyAllItems={props.admin} key={index} doc={res} searchText={searchText} />);
                 })}
 

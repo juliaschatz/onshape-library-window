@@ -148,7 +148,7 @@ export default function Document(props: DocumentProps) {
             alignItems='stretch'
             spacing={1}
           >
-            {expanded && searchedInsertables && searchedInsertables.length > 0 && searchedInsertables.map((p, index) => {
+            {expanded && searchedInsertables && searchedInsertables.length > 0 && searchedInsertables.sort((a, b) => a.name.localeCompare(b.name)).map((p, index) => {
               return (<InsertableElement insertable={p} key={index} isAdminElement={!!props.isLazyAllItems} />);
             })}
                         
