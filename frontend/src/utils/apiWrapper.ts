@@ -11,7 +11,11 @@ export async function getMkcadDocs(): Promise<OnshapeDocument[]> {
   // if (onshapeDocs.length === 0) {
   //   onshapeDocs = await getMkcadDocsFromApi();
   // }
-  return getMkcadDocsFromApi();
+  let docs = await getMkcadDocsFromApi();
+  docs.forEach(doc => {
+    doc.insertables = [];
+  })
+  return docs;
 }
 
 let startedFetch: boolean = false;

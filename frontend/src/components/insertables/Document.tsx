@@ -13,6 +13,10 @@ import { CircularProgress } from '@material-ui/core';
 import { searchOptionsState } from "../../utils/atoms";
 import { useRecoilValue } from 'recoil';
 
+import { insertablesSearch } from '../../utils/fuzzySearch'
+
+import Fuse from 'fuse.js';
+
 const useStyles = makeStyles((theme: Theme) => 
     createStyles({
         root: {
@@ -43,7 +47,8 @@ const AccordionSummaryIconLeft = withStyles({
 
 interface DocumentProps {
     doc: OnshapeDocument,
-    isLazyAllItems?: boolean,
+  isLazyAllItems?: boolean,
+  searchText: string
 }
 
 export default function Document(props: DocumentProps) {
@@ -85,7 +90,6 @@ export default function Document(props: DocumentProps) {
     if (searchOptions.asm === (p.type === 'ASSEMBLY') && !searchOptions.config) {
       return true;
     }
-    // if(searchOptions.asm === (p.type ==='ASSEMBLY'))
     if (searchOptions.part === (p.type === "PART") && searchOptions.asm === (p.type === "ASSEMBLY") && searchOptions.config === (p.config.length > 0)) {
       return true;
     }
@@ -94,6 +98,11 @@ export default function Document(props: DocumentProps) {
 
   if (filtered.length === 0) {
     return (<></>);
+  }
+
+  let searchedInsertables: Fuse.FuseResult<OnshapeInsertable>[] = []
+  if (props.searchText !== '') {
+    searchedInsertables = insertablesSearch(props.searchText, filtered);
   }
 
   return (
@@ -118,21 +127,14 @@ export default function Document(props: DocumentProps) {
             alignItems='stretch'
             spacing={1}
           >
-
-            {/* {expanded && insertables.length > 0 && insertables.map((p, index) => {
-              if(!searchOptions.part && !searchOptions.asm && !searchOptions.config && !searchOptions.composite)
-                return <InsertableElement insertable={p} key={index} />;
-              if (searchOptions.part === (p.type === "PART") && searchOptions.asm === (p.type === "ASSEMBLY")) {
-                return <InsertableElement insertable={p} key={index} />
-              }
-
-              return;
-            })} */}
-
-            {filtered && filtered.length > 0 && filtered.map((p, index) => {
+            {expanded && filtered && filtered.length > 0 && searchedInsertables.length === 0 && filtered.map((p, index) => {
               // if (p.type === 'ASSEMBLY') {
                 return (<InsertableElement insertable={p} key={index} />);
               // }
+            })}
+
+            {expanded && searchedInsertables && searchedInsertables.length > 0 && searchedInsertables.map((p, index) => {
+              return (<InsertableElement insertable={p.item} />);
             })}
                         
           </Grid>
