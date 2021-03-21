@@ -101,14 +101,14 @@ export default function InsertableElement(props: ElementProps) {
           direction="row"
           justify="flex-start"
           alignItems="center"
-          style={{height: "100%"}}
+          style={{height: "100%", width: "100%"}}
+          wrap="nowrap"
         >
           
-          {props.insertable.type === "ASSEMBLY" ? <AssemblyIcon className={classes.icon}/> : <PartIcon2 className={classes.icon} />}
-          {props.insertable.thumb && <img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} />}
-          {<Divider flexItem variant='fullWidth' />}
-          <div style={{height: "100%", maxWidth: "90%", flexGrow: 1}}><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div>
-          {props.isAdminElement && !overrideUpdate && isPublished && props.insertable.versionId !== props.insertable.lastVersion && <Button
+          <Grid item sm={1}>{props.insertable.type === "ASSEMBLY" ? <AssemblyIcon className={classes.icon}/> : <PartIcon2 className={classes.icon} />}</Grid>
+          {props.insertable.thumb && <Grid item sm={1}><img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} /></Grid>}
+          <Grid item xl={12}><div><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div></Grid>
+          {props.isAdminElement && !overrideUpdate && isPublished && props.insertable.versionId !== props.insertable.lastVersion && <Grid item sm><Button
             variant="contained"
             color="primary"
             size="small"
@@ -116,11 +116,9 @@ export default function InsertableElement(props: ElementProps) {
             startIcon={<NewReleasesIcon />}
           >
             Update
-          </Button>}
-          {props.isAdminElement && <Switch checked={isPublished} onChange={handleSliderToggle} color="primary" />}
-          {loading && <CircularProgress />}
-          <PartIcon2 className={classes.transparent}/>
-          {/* <Grid item xs={6} sm={12} /> */}
+          </Button></Grid>}
+          {props.isAdminElement && <Grid item sm={3}><Switch checked={isPublished} onChange={handleSliderToggle} color="primary" /></Grid>}
+          {loading && <Grid item xs={3}><CircularProgress /></Grid>}
           
         </Grid>
       </Paper>
