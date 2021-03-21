@@ -35,7 +35,7 @@ export default function DocumentList(props: DocumentListProps) {
 
     const searchText = useRecoilValue(searchTextState);
 
-    console.log(searchText);
+    // console.log(searchText);
 
     useEffect(() => {
         (async function () {
@@ -63,7 +63,7 @@ export default function DocumentList(props: DocumentListProps) {
 
     if (searchText !== '') {
         filteredResults = FuzzySearch(searchText, docs).map((res) => res.item);
-        console.log(filteredResults);
+        // console.log(filteredResults);
     }
     else {
       filteredResults = docs;
