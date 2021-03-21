@@ -46,13 +46,13 @@ const AccordionSummaryIconLeft = withStyles({
 })(AccordionSummary);
 
 interface DocumentProps {
-    doc: OnshapeDocument,
+  doc: OnshapeDocument,
   isLazyAllItems?: boolean,
   searchText: string
 }
 
 export default function Document(props: DocumentProps) {
-    const classes = useStyles();
+  const classes = useStyles();
 
   const [insertables, setInsertables] = useState<OnshapeInsertable[]>([]);
   const [latched, setLatched] = useState<boolean>(false);
@@ -61,15 +61,31 @@ export default function Document(props: DocumentProps) {
 
   const searchOptions = useRecoilValue(searchOptionsState);
 
+  const resetInsertables = () => {
+    getOnshapeInsertables().then((allInsertables) => {
+      const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+      setInsertables(filtered);
+    });
+  };
+
   useEffect(() => {
     (async function () {
       if (!props.isLazyAllItems) {
-        const allInsertables = await getOnshapeInsertables();
-        const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
-        setInsertables(filtered);
+        resetInsertables();
       }
     })();
   }, [props.doc.id]);
+
+  useEffect(() => {
+    (async function () {
+      setExpanded(false);
+      setLatched(false);
+      setInsertables([]);
+      if (!props.isLazyAllItems) {
+        resetInsertables();
+      }
+    })();
+  }, [props.isLazyAllItems]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (props.isLazyAllItems && !latched) {
@@ -96,18 +112,22 @@ export default function Document(props: DocumentProps) {
     return false;
   });
 
-  if (filtered.length === 0) {
+  if (filtered.length === 0 && !props.isLazyAllItems) {
     return (<></>);
   }
 
-  let searchedInsertables: Fuse.FuseResult<OnshapeInsertable>[] = []
+  let searchedInsertables: OnshapeInsertable[] = []
   if (props.searchText !== '') {
-    searchedInsertables = insertablesSearch(props.searchText, filtered);
+    searchedInsertables = insertablesSearch(props.searchText, filtered).map((item) => item.item);
+  }
+  else {
+    searchedInsertables = filtered;
   }
 
   return (
     <div className={classes.rootdiv}>
       <Accordion className={classes.root} TransitionProps={{ timeout: 400 }}
+        expanded={expanded}
         onChange={() => setExpanded(!expanded)}
       >
         <AccordionSummaryIconLeft
@@ -127,14 +147,8 @@ export default function Document(props: DocumentProps) {
             alignItems='stretch'
             spacing={1}
           >
-            {expanded && filtered && filtered.length > 0 && searchedInsertables.length === 0 && filtered.map((p, index) => {
-              // if (p.type === 'ASSEMBLY') {
-                return (<InsertableElement insertable={p} key={index} />);
-              // }
-            })}
-
             {expanded && searchedInsertables && searchedInsertables.length > 0 && searchedInsertables.map((p, index) => {
-              return (<InsertableElement insertable={p.item} />);
+              return (<InsertableElement insertable={p} key={index} isAdminElement={!!props.isLazyAllItems} />);
             })}
                         
           </Grid>
