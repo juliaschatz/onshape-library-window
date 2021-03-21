@@ -25,8 +25,8 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         rootdiv: {
             width: '100%',
-            paddingTop: '10px',
-            paddingBottom: '10px'
+            paddingTop: '2px',
+            paddingBottom: '2px'
             
         },
         heading: {
@@ -136,7 +136,8 @@ export default function Document(props: DocumentProps) {
           id="panel1a-header"
           onClick={handleClick}
         >
-          <Typography className={classes.heading}>{props.doc.name}</Typography>
+          <Typography className={classes.heading}>{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
+          
           {isLoading && <CircularProgress /> }
         </AccordionSummaryIconLeft>
         <AccordionDetails>
