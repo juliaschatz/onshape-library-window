@@ -66,17 +66,18 @@ export default function Searchbar(props: SearchbarProps) {
               }}
               color="white"
               getOptionLabel={(o: SearchOption) => o.title}
-              renderOption={(option, { selected }) => (
-                <React.Fragment>
+
+              filterOptions={(options, state) => options}
+
+              renderOption={(option, { selected }) => {
+                return (<React.Fragment>
                   <Checkbox
                     checked={selected}
                   />
                   {option.title}
-                </React.Fragment>
-              )}
+                </React.Fragment>)
+              }}
               onChange={(event, values) => {
-                console.log(values);
-
                 let options = {
                   part: false,
                   asm: false,
@@ -91,14 +92,10 @@ export default function Searchbar(props: SearchbarProps) {
                   if (val.tag === 'asm') {
                     options.asm = true;
                   }
-                  // if (val.tag === 'composite') {
-                  //   options.composite = true;
-                  // }
                   if (val.tag === 'config') {
                     options.config = true;
                   }
                 });
-                console.log(options);
                 setSearchOptions(options);
               }}
 
