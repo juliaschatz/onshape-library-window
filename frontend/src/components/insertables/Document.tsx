@@ -2,8 +2,6 @@ import { Theme, makeStyles, createStyles, Grid, Accordion, AccordionDetails, Acc
 import { useEffect, useState } from 'react';
 
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import Part from './Part';
-import Assembly from './Assembly';
 
 import { OnshapeDocument } from '../../utils/models/OnshapeDocument'
 import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
@@ -11,6 +9,9 @@ import { getOnshapeInsertables } from '../../utils/apiWrapper';
 import InsertableElement from './InsertableElement';
 import { getAllDocumentInsertables } from "../../utils/api";
 import { CircularProgress } from '@material-ui/core';
+
+import { searchOptionsState } from "../../utils/atoms";
+import { useRecoilValue } from 'recoil';
 
 const useStyles = makeStyles((theme: Theme) => 
     createStyles({
@@ -53,6 +54,8 @@ export default function Document(props: DocumentProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expanded, setExpanded] = useState(false);
 
+  const searchOptions = useRecoilValue(searchOptionsState);
+
   useEffect(() => {
     (async function () {
       if (!props.isLazyAllItems) {
@@ -75,6 +78,23 @@ export default function Document(props: DocumentProps) {
     }
   }
 
+  const filtered = insertables.filter(p => {
+    if (!searchOptions.part && !searchOptions.asm && !searchOptions.config && !searchOptions.composite) {
+      return true;
+    }
+    if (searchOptions.asm === (p.type === 'ASSEMBLY') && !searchOptions.config) {
+      return true;
+    }
+    // if(searchOptions.asm === (p.type ==='ASSEMBLY'))
+    if (searchOptions.part === (p.type === "PART") && searchOptions.asm === (p.type === "ASSEMBLY") && searchOptions.config === (p.config.length > 0)) {
+      return true;
+    }
+    return false;
+  });
+
+  if (filtered.length === 0) {
+    return (<></>);
+  }
 
   return (
     <div className={classes.rootdiv}>
@@ -99,13 +119,25 @@ export default function Document(props: DocumentProps) {
             spacing={1}
           >
 
-                        {expanded && insertables.length > 0 && insertables.map((p) => {
-                            return <InsertableElement insertable={p} />;
-                        })}
+            {/* {expanded && insertables.length > 0 && insertables.map((p, index) => {
+              if(!searchOptions.part && !searchOptions.asm && !searchOptions.config && !searchOptions.composite)
+                return <InsertableElement insertable={p} key={index} />;
+              if (searchOptions.part === (p.type === "PART") && searchOptions.asm === (p.type === "ASSEMBLY")) {
+                return <InsertableElement insertable={p} key={index} />
+              }
+
+              return;
+            })} */}
+
+            {filtered && filtered.length > 0 && filtered.map((p, index) => {
+              // if (p.type === 'ASSEMBLY') {
+                return (<InsertableElement insertable={p} key={index} />);
+              // }
+            })}
                         
-                    </Grid>
-                </AccordionDetails>
-            </Accordion>
-        </div>
+          </Grid>
+        </AccordionDetails>
+      </Accordion>
+    </div>
     )
 }

@@ -90,14 +90,14 @@ export default function Searchbar(props: SearchbarProps) {
                   if (val.tag === 'asm') {
                     options.asm = true;
                   }
-                  if (val.tag === 'composite') {
-                    options.composite = true;
-                  }
+                  // if (val.tag === 'composite') {
+                  //   options.composite = true;
+                  // }
                   if (val.tag === 'config') {
-                    options.composite = true;
+                    options.config = true;
                   }
                 });
-
+                console.log(options);
                 setSearchOptions(options);
               }}
 
@@ -128,7 +128,7 @@ export default function Searchbar(props: SearchbarProps) {
 const searchOptions: SearchOption[] = [
   { title: 'Part', tag: 'part' },
   { title: 'Assembly', tag: 'asm' },
-  { title: "Composite", tag: "composite" },
+  // { title: "Composite", tag: "composite" },
   { title: 'Configurable', tag: 'config' }
 ]
 

@@ -11,5 +11,5 @@ export interface OnshapeInsertable {
     lastVersion?: string;
     ref: number;
     thumb?: string;
-    config?: Configuration[];
+    config: Configuration[];
 }
