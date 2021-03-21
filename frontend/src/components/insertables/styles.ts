@@ -1,6 +1,6 @@
 import { makeStyles, Theme, createStyles } from "@material-ui/core";
 
-const iconSize = "1.5em";
+const iconSize = "1em";
 const assemblyIconSize = "2em";
 
 export default makeStyles((theme: Theme) =>

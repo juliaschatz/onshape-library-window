@@ -14,6 +14,7 @@ import Switch from '@material-ui/core/Switch';
 import useStyles from "./styles";
 
 import PartIcon2 from "../../icons/SvgPartIcon";
+import AssemblyIcon from "../../icons/SvgAssemblyIcon";
 import InsertDialog from "../InsertDialog";
 import { OnshapeInsertable } from "../../utils/models/OnshapeInsertable";
 
@@ -21,9 +22,6 @@ import { CircularProgress, Button } from '@material-ui/core';
 
 import { insertPart, publishPart } from "../../utils/api"
 
-const PartIcon = SettingsInputCompositeIcon;
-const AssemblyIcon = SettingsInputHdmiIcon;
-const CompositeIcon = SettingsInputAntennaIcon;
 
 interface ElementProps {
     insertable: OnshapeInsertable;
@@ -105,7 +103,7 @@ export default function InsertableElement(props: ElementProps) {
           wrap="nowrap"
         >
           
-          <Grid item sm={1}>{props.insertable.type === "ASSEMBLY" ? <AssemblyIcon className={classes.icon}/> : <PartIcon2 className={classes.icon} />}</Grid>
+          <Grid item xs={1}>{props.insertable.type === "ASSEMBLY" ? <AssemblyIcon className={classes.icon} /> : <PartIcon2 className={classes.icon} />}</Grid>
           {props.insertable.thumb && <Grid item sm={1}><img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} /></Grid>}
           <Grid item xl={12}><div><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div></Grid>
           {props.isAdminElement && !overrideUpdate && isPublished && props.insertable.versionId !== props.insertable.lastVersion && <Grid item sm><Button
