@@ -94,7 +94,11 @@ function ensureAuthenticated(req, res, next) {
     res.status(200);
     return next()
   }
-  res.status(401).redirect('/oauthSignin' + url.parse(req.url,true).search);
+  var redirect = url.parse(req.url,true).search;
+  if (!redirect) {
+    redirect = "";
+  }
+  res.status(401).redirect('/oauthSignin' + redirect);
 }
 
 app.use('/api', api);
@@ -117,8 +121,12 @@ app.use('/oauthSignin', storeExtraParams,
 
 function storeExtraParams(req, res) {
   var redirect = req.query.redirectOnshapeUri;
-  if (redirect === undefined) {
-    redirect = "/" + url.parse(req.url,true).search;
+  if (redirect === undefined || redirect === null) {
+    var search = url.parse(req.url,true).search;
+    if (search === null) {
+      search = "";
+    }
+    redirect = "/" + search;
   }
 
   var state = {
