@@ -10,7 +10,7 @@ import { SwapHoriz } from "@material-ui/icons";
 import "./SearchBar.css";
 
 import { searchOptionsState, searchTextState } from "../utils/atoms";
-import { useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -47,12 +47,17 @@ export default function Searchbar(props: SearchbarProps) {
   const input = useRef(null);
 
   const setSearch = useSetRecoilState(searchTextState);
+
   const setSearchOptions = useSetRecoilState(searchOptionsState);
+
+  const search = useRecoilValue(searchTextState);
 
   return (
     <div >
       <AppBar position="static" color={props.isAdmin ? "secondary" : "primary"}>
         <Toolbar>
+
+
           <div className={classes.search}>
             <Autocomplete
               ref={input}
@@ -68,16 +73,21 @@ export default function Searchbar(props: SearchbarProps) {
               getOptionLabel={(o: SearchOption) => o.title}
 
               filterOptions={(options, state) => options}
+              
+              inputValue={search}
 
               renderOption={(option, { selected }) => {
-                return (<React.Fragment>
-                  <Checkbox
-                    checked={selected}
-                  />
+                return (
+                  <React.Fragment>
+                    <Checkbox
+                      checked={selected}
+                    />
                   {option.title}
-                </React.Fragment>)
+                  </React.Fragment>)
               }}
               onChange={(event, values) => {
+                console.log(search);
+
                 let options = {
                   part: false,
                   asm: false,
@@ -100,16 +110,23 @@ export default function Searchbar(props: SearchbarProps) {
               }}
 
               renderInput={(params) => (
-                <TextField {...params}
+                <TextField
+                  {...params}
                   variant="outlined"
+                  // defaultValue="teeest"
                   placeholder="Search"
                   onChange={(event) => {
+                    // search = event.target.value;
+                    // console.log(params);
                     setSearch(event.target.value);
                   }}
                 />
               )}
             />
           </div>
+
+
+
           {props.showAdmin && <Button 
             startIcon={<SwapHoriz />}
             color="inherit" 
