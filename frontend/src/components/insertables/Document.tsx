@@ -127,7 +127,7 @@ export default function Document(props: DocumentProps) {
     searchedInsertables = filtered;
   }
 
-  if (searchedInsertables.length === 0) {
+  if (searchedInsertables.length === 0 && !props.isLazyAllItems) {
     return (<></>);
   }
 

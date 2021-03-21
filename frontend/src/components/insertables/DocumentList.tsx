@@ -62,8 +62,7 @@ export default function DocumentList(props: DocumentListProps) {
     }, [])
 
     if (searchText !== '') {
-        filteredResults = FuzzySearch(searchText, docs).map((res) => res.item);
-        // console.log(filteredResults);
+      filteredResults = FuzzySearch(searchText, docs).map((res) => res.item);
     }
     else {
       filteredResults = docs;
