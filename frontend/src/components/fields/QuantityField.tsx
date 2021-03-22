@@ -16,12 +16,12 @@ export default function QuantityField(props: FieldProps) {
     }
   };
 
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.value.length === 0 || event.target.value === "" || event.target.value === "-" || event.target.value === "-0") {
-      setValue(event.target.value);
+  const applyChange = (newVal: string) => {
+    if (+newVal === 0 || newVal === "" || newVal === "-" || newVal === "-0") {
+      setValue(newVal);
       return;
     }
-    const newValue = +event.target.value;
+    const newValue = +newVal;
     if (!isNaN(newValue)) {
       if (configItem.quantityMin && newValue < configItem.quantityMin) {
         setHelperText(`Quantity must be greater than ${configItem.quantityMin}`);
@@ -43,6 +43,15 @@ export default function QuantityField(props: FieldProps) {
       setHelperText("Enter a number");
     }
   };
+
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    applyChange(event.target.value);
+  };
+
+  React.useEffect(()=>{
+    applyChange(configItem.default as string);
+  }, []);
+  
   
   return <TextField
     id={configItem.id}

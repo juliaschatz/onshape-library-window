@@ -17,13 +17,21 @@ export default function EnumField(props: FieldProps) {
   const [value, setValue] = React.useState(configItem.default as string);
   const classes = useStyles();
 
-  const onChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setValue(event.target.value as string);
-    const newVal = event.target.value as string;
+  const applyChange = (newValue: string) => {
+    setValue(newValue);
     const newResult = {...props.results};
-    newResult[configItem.id] = newVal;
+    newResult[configItem.id] = newValue;
     props.setResult(newResult);
+  }
+
+  const onChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    applyChange(event.target.value as string);
   };
+
+  React.useEffect(()=>{
+    applyChange(configItem.default as string);
+  }, []);
+
   const label_id = `label-${configItem.id}`;
   return <div><InputLabel shrink id={label_id}>{configItem.name}</InputLabel>
     <Select

@@ -8,12 +8,20 @@ export default function StringField(props: FieldProps) {
   const configItem = props.configItem;
   const [value, setValue] = React.useState(configItem.default);
 
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value);
+  const applyChange = (newValue: string) => {
+    setValue(newValue);
     const newResult = {...props.results};
-    newResult[configItem.id] = value;
+    newResult[configItem.id] = newValue;
     props.setResult(newResult);
   };
+
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    applyChange(event.target.value);
+  };
+
+  React.useEffect(()=>{
+    applyChange(configItem.default);
+  }, []);
   
   return <TextField
     id={configItem.id}

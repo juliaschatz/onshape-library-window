@@ -1,4 +1,3 @@
-import classes from "*.module.css";
 import { makeStyles, Theme, createStyles, withStyles } from "@material-ui/core";
 import React from 'react';
 import DocumentList from "./components/insertables/DocumentList";

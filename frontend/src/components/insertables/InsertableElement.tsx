@@ -2,12 +2,6 @@ import React from "react";
 
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { Grid, Paper, SvgIcon, Typography, ButtonBase } from "@material-ui/core";
-
-import Divider from "@material-ui/core/Divider";
-
-import SettingsInputCompositeIcon from "@material-ui/icons/SettingsInputComposite";
-import SettingsInputHdmiIcon from "@material-ui/icons/SettingsInputHdmi";
-import SettingsInputAntennaIcon from "@material-ui/icons/SettingsInputAntenna";
 import NewReleasesIcon from '@material-ui/icons/NewReleases';
 import Switch from '@material-ui/core/Switch';
 
@@ -59,12 +53,8 @@ export default function InsertableElement(props: ElementProps) {
       configStr += `${key}=${(configOpts as any)[key] as string};`;
     }
     configStr = configStr.substring(0, configStr.length-1);
-    console.log(configStr);
-    var t0 = performance.now();
     setLoading(true);
     insertPart(props.insertable, configStr).then((result: boolean) => {
-      var t1 = performance.now();
-      console.log(`Result: ${result}. ${t1 - t0} ms`);
       setLoading(false);
     });
   };
