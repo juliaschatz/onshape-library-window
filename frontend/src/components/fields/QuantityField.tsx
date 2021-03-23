@@ -37,7 +37,7 @@ export default function QuantityField(props: FieldProps) {
       }
       setValue(newValue.toString());
       const newResult = {...props.results};
-      newResult[configItem.id] = `${value}${configItem.quantityUnits ? `+${configItem.quantityUnits}` : ""}`;
+      newResult[configItem.id] = `${newValue}${configItem.quantityUnits ? `+${configItem.quantityUnits}` : ""}`;
       props.setResult(newResult);      
     } else {
       setHelperText("Enter a number");
