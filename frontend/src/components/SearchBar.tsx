@@ -11,6 +11,9 @@ import "./SearchBar.css";
 
 import { searchOptionsState, searchTextState } from "../utils/atoms";
 import { useRecoilValue, useSetRecoilState } from 'recoil';
+import styles from './insertables/styles';
+
+import SearchBar from 'material-ui-search-bar'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -30,7 +33,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     searchColor: {
       color: "white"
-    }
+    },
+    
   }),
 );
 
@@ -55,21 +59,38 @@ export default function Searchbar(props: SearchbarProps) {
 
 
   
-  useEffect(() => {
-    let button = document.querySelectorAll('button')[0];
-    clearRef = button;
-    button.addEventListener('click', () => {
-      setSearch('');
-    });
-  }, []);
+  // useEffect(() => {
+  //   let button = document.querySelectorAll('button')[0];
+  //   clearRef = button;
+  //   button.addEventListener('click', () => {
+  //     setSearch('');
+  //   });
+  // }, []);
 
   return (
     <div >
       <AppBar position="static" color={props.isAdmin ? "secondary" : "primary"}>
         <Toolbar>
+          <div>
+            <div>
+              <SearchBar
+              
+              />
+              {(props.showAdmin || true) && <Button
+                startIcon={<SwapHoriz />}
+                color="inherit"
+                onClick={() => props.setAdmin(!props.isAdmin)}>
+                {props.isAdmin ? "User" : "Admin"}
+              </Button>}
+            </div>
+            <div>
+              
+            </div>
+          </div>
 
 
-          <div className={classes.search}>
+          {/* <div className={classes.search}> */}
+          {/* 
             <Autocomplete
               ref={input}
               multiple
@@ -138,17 +159,34 @@ export default function Searchbar(props: SearchbarProps) {
                   }}
                 />
               )}
-            />
-          </div>
+            /> */}
+          {/* <TextField
+              // {...params}
+              className={classes.searchColor}
+              variant="outlined"
+              placeholder="Search"
+              autoFocus
+              onChange={(event) => {
+              // extremely jank way of keeping clear button visible but who cares 
+              // clearRef?.classList.add('MuiAutocomplete-clearIndicatorDirty');  
+              setSearch(event.target.value);
+            }} 
+          />
+          */}
+
+
+          {/* </div> */}
 
 
 
-          {props.showAdmin && <Button 
+          {/* {props.showAdmin && <Button 
             startIcon={<SwapHoriz />}
             color="inherit" 
             onClick={() => props.setAdmin(!props.isAdmin)}>
               {props.isAdmin ? "User" : "Admin"}
-          </Button>}
+          </Button>} */}
+
+
         </Toolbar>
       </AppBar>
     </div>
