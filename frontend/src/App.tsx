@@ -1,11 +1,13 @@
 import { makeStyles, Theme, createStyles, withStyles } from "@material-ui/core";
-import React from 'react';
+import React, { useEffect } from 'react';
 import DocumentList from "./components/insertables/DocumentList";
 import SearchBar from "./components/SearchBar";
 import "./styles.css";
 import { getIsAdmin } from "./utils/api";
 
 import { RecoilRoot } from "recoil";
+
+import ReactGA from 'react-ga';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -33,6 +35,11 @@ function App() {
   // …
   getIsAdmin().then((showAdm) => {
     setShowAdmin(showAdm);
+  });
+
+  useEffect(() => {
+    ReactGA.initialize('G-EKPPY32HJY');
+    ReactGA.pageview(window.location.pathname + window.location.search);
   });
   
 

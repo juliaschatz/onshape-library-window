@@ -18,6 +18,8 @@ import { CircularProgress, Button } from '@material-ui/core';
 
 import { insertPart, publishPart } from "../../utils/api"
 
+import ReactGA from "react-ga" 
+
 
 interface ElementProps {
     insertable: OnshapeInsertable;
@@ -46,6 +48,12 @@ export default function InsertableElement(props: ElementProps) {
   };
 
   const handleInsert = () => {
+    ReactGA.event({
+      category: 'InsertableElement',
+      action: 'Insert',
+      label: props.insertable.name
+    });
+
     setOpen(false);
     // Collect configuration
     let configStr = "";
