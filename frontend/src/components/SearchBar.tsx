@@ -4,7 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 
 import { Autocomplete } from "@material-ui/lab";
-import { Button, Checkbox, TextField } from "@material-ui/core";
+import { Avatar, Button, Checkbox, Grid, Paper, TextField } from "@material-ui/core";
 import { SwapHoriz } from "@material-ui/icons";
 
 import "./SearchBar.css";
@@ -15,11 +15,21 @@ import styles from './insertables/styles';
 
 import SearchBar from 'material-ui-search-bar'
 
+import { FilterSwitch } from './searchbar/FilterSwitch';
+
+import Chip from '@material-ui/core/Chip';
+
+import { SearchInput } from "./searchbar/SearchInput";
+
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     grow: {
       flexGrow: 1,
-      flexShrink: 3
+      // flexShrink: 3
+    },
+    root: {
+      margin: '5px'
     },
     search: {
       flexGrow: 1,
@@ -34,7 +44,23 @@ const useStyles = makeStyles((theme: Theme) =>
     searchColor: {
       color: "white"
     },
-    
+    paper: {
+      padding: theme.spacing(2),
+      // paddingTop: '5px',
+      marginTop: '10px',
+      textAlign: 'center',
+      color: theme.palette.text.secondary,
+    },
+    searchBar: {
+      marginTop: '10px'
+    },
+    adminButton: {
+      marginTop: '10px',
+      // marginRight: '0%',
+      marginLeft: '25%',
+      textAlign: 'center'
+      // fontSize: '20px'
+    }
   }),
 );
 
@@ -56,8 +82,6 @@ export default function Searchbar(props: SearchbarProps) {
   const setSearchOptions = useSetRecoilState(searchOptionsState);
 
   const search = useRecoilValue(searchTextState);
-
-
   
   // useEffect(() => {
   //   let button = document.querySelectorAll('button')[0];
@@ -69,9 +93,96 @@ export default function Searchbar(props: SearchbarProps) {
 
   return (
     <div >
-      <AppBar position="static" color={props.isAdmin ? "secondary" : "primary"}>
+      <AppBar position="static" color={props.isAdmin ? "secondary" : "primary"} className={classes.root}>
         <Toolbar>
-          <div>
+
+          <Grid container spacing={1}>
+
+            <Grid item xs={(props.showAdmin ? 9 : 12)}>
+              {/* <Paper className={classes.paper}>xs=12</Paper> */}
+              {/* <Chip size="small" avatar={<Avatar>M</Avatar>} label="Clickable" /> */}
+              {/* <SearchBar className={classes.searchBar} ></SearchBar> */}
+              <SearchInput className={classes.searchBar}/>
+            </Grid>
+
+            {props.showAdmin && <Grid item xs={3}>
+              <Button
+                startIcon={<SwapHoriz />}
+                className={classes.adminButton}
+                size="large"
+                color="inherit"
+                onClick={() => props.setAdmin(!props.isAdmin)}>
+                {props.isAdmin ? "User" : "Admin"}
+              </Button>
+            </Grid>}
+
+            <FilterSwitch name="Part"/>
+            <FilterSwitch name="Assembly"/>
+            <FilterSwitch name="Configurable"/>
+
+            {/* <Grid item xs={12} > */}
+              {/* <FormControl component="fieldset"> */}
+              {/* <FormGroup aria-label="position" row> */}
+                {/* <Grid item xs={4} >
+                  <FormControlLabel
+                    value="top"
+                    control={<Switch color="primary" />}
+                    label="Top"
+                    labelPlacement="top"
+                  />
+                
+                </Grid>
+                <Grid item xs={4} >
+                  <FormControlLabel
+                    value="top"
+                    control={<Switch color="primary" />}
+                    label="Top"
+                    labelPlacement="top"
+                  />
+
+                </Grid>
+                <Grid item xs={4} >
+                  <FormControlLabel
+                    value="top"
+                    control={<Switch color="primary" />}
+                    label="Top"
+                    labelPlacement="top"
+                  /> */}
+
+                {/* </Grid> */}
+
+                  {/* <FormControlLabel
+                    value="start"
+                    control={<Switch color="primary" />}
+                    label="Start"
+                    labelPlacement="top"
+                  />
+                  <FormControlLabel
+                    value="bottom"
+                    control={<Switch color="primary" />}
+                    label="Bottom"
+                    labelPlacement="top"
+                  />
+                  <FormControlLabel
+                    value="end"
+                    control={<Switch color="primary" />}
+                    label="End"
+                    labelPlacement="top"
+                  /> */}
+                {/* </FormGroup> */}
+              {/* </FormControl> */}
+            {/* </Grid> */}
+
+            {/* <Grid item xs={6}>
+              <Paper className={classes.paper}>xs=6</Paper>
+            </Grid>
+            <Grid item xs={6}>
+              <Paper className={classes.paper}>xs=6</Paper>
+            </Grid> */}
+          </Grid>
+
+
+          {/* <div>
             <div>
               <SearchBar
               
@@ -86,7 +197,7 @@ export default function Searchbar(props: SearchbarProps) {
             <div>
               
             </div>
-          </div>
+          </div> */}
 
 
           {/* <div className={classes.search}> */}
