@@ -49,9 +49,10 @@ export default function InsertableElement(props: ElementProps) {
 
   const handleInsert = () => {
     ReactGA.event({
-      category: 'InsertableElement',
       action: 'Insert',
-      label: props.insertable.name
+      category: props.insertable.documentName,
+      label: props.insertable.name,
+      transport: 'xhr'
     });
 
     setOpen(false);

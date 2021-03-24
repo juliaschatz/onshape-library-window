@@ -156,6 +156,7 @@ export default function Document(props: DocumentProps) {
             spacing={1}
           >
             {expanded && searchedInsertables && searchedInsertables.length > 0 && searchedInsertables.sort((a, b) => a.name.localeCompare(b.name)).map((p, index) => {
+              p.documentName = props.doc.name;
               return (<InsertableElement insertable={p} key={index} isAdminElement={!!props.isLazyAllItems} />);
             })}
                         
