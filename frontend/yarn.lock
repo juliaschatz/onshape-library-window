@@ -9959,7 +9959,7 @@ react-error-overlay@^6.0.9:
 
 react-ga@^3.3.0:
   version "3.3.0"
-  resolved "http://npm.kubicacorp.local:4873/react-ga/-/react-ga-3.3.0.tgz#c91f407198adcb3b49e2bc5c12b3fe460039b3ca"
+  resolved "https://registry.yarnpkg.com/react-ga/-/react-ga-3.3.0.tgz#c91f407198adcb3b49e2bc5c12b3fe460039b3ca"
   integrity sha512-o8RScHj6Lb8cwy3GMrVH6NJvL+y0zpJvKtc0+wmH7Bt23rszJmnqEQxRbyrqUzk9DTJIHoP42bfO5rswC9SWBQ==
 
 react-is@^16.7.0, react-is@^16.8.1:
