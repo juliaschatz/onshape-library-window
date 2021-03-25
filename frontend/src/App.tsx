@@ -37,8 +37,9 @@ function App() {
     setShowAdmin(showAdm);
   });
 
+  const GACode = 'UA-137025363-3';
   useEffect(() => {
-    ReactGA.initialize('G-EKPPY32HJY');
+    ReactGA.initialize( GACode, { debug: true });
     ReactGA.pageview(window.location.pathname + window.location.search);
   });
   
