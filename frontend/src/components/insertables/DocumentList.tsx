@@ -69,6 +69,16 @@ export default function DocumentList(props: DocumentListProps) {
     }
 
 
+/**
+ * Left off:
+ * Favoriting now saves to local storage
+ * Now I need to add a favorites document to the top
+ * And include all the favorited documents in the insertables list
+ */
+
+
+
+
     return (
         <div className={classes.root}>
             <Grid

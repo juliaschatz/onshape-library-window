@@ -64,12 +64,13 @@ export async function getOnshapeInsertablesThumbsFromApi(insertables: OnshapeIns
 
 export async function getIsAdmin(): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
-    request<{auth: boolean}>("api/isAdmin").then((result) => {
-      resolve(result.auth);
-    }).catch(() => {
-      var redirect = `/oauthSignin?redirectOnshapeUri=${encodeURIComponent(window.location.href)}`;
-      window.location.href = redirect;
-    })
+    resolve(true);
+    // request<{auth: boolean}>("api/isAdmin").then((result) => {
+    //   resolve(result.auth);
+    // }).catch(() => {
+    //   var redirect = `/oauthSignin?redirectOnshapeUri=${encodeURIComponent(window.location.href)}`;
+    //   window.location.href = redirect;
+    // })
   });
 }
 

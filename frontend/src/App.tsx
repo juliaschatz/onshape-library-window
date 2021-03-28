@@ -39,7 +39,7 @@ function App() {
 
   const GACode = 'UA-137025363-3';
   useEffect(() => {
-    ReactGA.initialize( GACode, { debug: true });
+    ReactGA.initialize(GACode);
     ReactGA.pageview(window.location.pathname + window.location.search);
   });
   
