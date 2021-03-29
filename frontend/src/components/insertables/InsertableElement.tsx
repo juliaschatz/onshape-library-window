@@ -63,10 +63,10 @@ export default function InsertableElement(props: ElementProps) {
       configStr += `${key}=${(configOpts as any)[key] as string};`;
     }
     configStr = configStr.substring(0, configStr.length-1);
-    //setLoading(true);
-    // insertPart(props.insertable, configStr).then((result: boolean) => {
-    //   setLoading(false);
-    // });
+    setLoading(true);
+    insertPart(props.insertable, configStr).then((result: boolean) => {
+      setLoading(false);
+    });
   };
 
   const handleSliderToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,11 +83,6 @@ export default function InsertableElement(props: ElementProps) {
     setOverrideUpdate(true);
     publishPart(props.insertable, publish).finally(() => {setLoading(false)});
   };
-
-  const handleFavoriteClick = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }
 
   const dialog = <InsertDialog 
     insertable={props.insertable} 
