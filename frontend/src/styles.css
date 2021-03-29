@@ -3,6 +3,7 @@ body {
     background-color: #b0b0b8;
 }
 
-/* .favorite-icon:hover {
-    fill:greenyellow;
-} */
+.favorite-icon {
+    /* Waverly Robotics 7226 Purple */
+    color: #731daa;
+}

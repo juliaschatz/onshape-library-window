@@ -87,7 +87,6 @@ export default function InsertableElement(props: ElementProps) {
   const handleFavoriteClick = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Favorite clicked");
   }
 
   const dialog = <InsertDialog 

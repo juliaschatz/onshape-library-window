@@ -16,6 +16,7 @@ import { useRecoilValue } from 'recoil';
 import { insertablesSearch } from '../../utils/fuzzySearch'
 
 import Fuse from 'fuse.js';
+import FavoritesService from '../../utils/favorites';
 
 const useStyles = makeStyles((theme: Theme) => 
     createStyles({
@@ -48,10 +49,13 @@ const AccordionSummaryIconLeft = withStyles({
 interface DocumentProps {
   doc: OnshapeDocument,
   isLazyAllItems?: boolean,
-  searchText: string
+  searchText: string,
+  isFavorites?: boolean
 }
 
 export default function Document(props: DocumentProps) {
+
+  let favoritesService: FavoritesService = FavoritesService.getInstance();
   const classes = useStyles();
 
   const [insertables, setInsertables] = useState<OnshapeInsertable[]>([]);
@@ -62,8 +66,14 @@ export default function Document(props: DocumentProps) {
   const searchOptions = useRecoilValue(searchOptionsState);
 
   const resetInsertables = () => {
+
     getOnshapeInsertables().then((allInsertables) => {
-      const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+      let filtered: OnshapeInsertable[] = [];
+      if(props.isFavorites) {
+        filtered = allInsertables.filter(i => favoritesService.isInFavorites(i.elementId));
+      } else {
+        filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+      }
       setInsertables(filtered);
     });
   };
@@ -91,11 +101,19 @@ export default function Document(props: DocumentProps) {
     if (props.isLazyAllItems && !latched) {
       setLatched(true);
       setIsLoading(true);
-      getAllDocumentInsertables(props.doc.id).then((result) => {
-        setInsertables(result);
-      }).finally(() => {
-        setIsLoading(false);
-      })
+
+      if(!props.isFavorites) {
+        getAllDocumentInsertables(props.doc.id).then((result) => {
+          setInsertables(result);
+        }).finally(() => {
+          setIsLoading(false);
+        })
+      } else {
+        getOnshapeInsertables().then((allInsertables) => {
+          setInsertables(allInsertables.filter(i => favoritesService.isInFavorites(i.elementId)));
+        });
+      }
+      
     }
   }
 
