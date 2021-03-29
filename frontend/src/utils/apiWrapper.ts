@@ -1,9 +1,9 @@
 import { OnshapeDocument } from "./models/OnshapeDocument";
 import { OnshapeInsertable } from "./models/OnshapeInsertable";
 
-import { getMkcadDocsFromApi, getOnshapeInsertablesFromApi, getOnshapeInsertablesThumbsFromApi, getIsAdmin } from "./api";
+import { getMkcadDocsFromApi, getOnshapeInsertablesFromApi, getIsAdmin } from "./api";
 
-let onshapeDocs: OnshapeDocument[] = [];
+//let onshapeDocs: OnshapeDocument[] = [];
 let onshapeInsertables: Promise<OnshapeInsertable[]>;
 
 export async function getMkcadDocs(): Promise<OnshapeDocument[]> {

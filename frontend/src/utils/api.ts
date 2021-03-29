@@ -23,13 +23,13 @@ async function post<T>(endpoint: string, data: any): Promise<T> {
 export async function insertPart(insertable: OnshapeInsertable, configuration?: string): Promise<boolean> {
   const query = new URLSearchParams(window.location.search);
   const docId = query.get("docId");
-  const wvm = query.get("wvm");
+  //const wvm = query.get("wvm");
   const wvmId = query.get("wvmId");
   const eId = query.get("eId");
 
   const endpoint = `api/insert?documentId=${docId}&workspaceId=${wvmId}&elementId=${eId}`;
   return new Promise<boolean>((resolve, reject) => {
-    const result = post(endpoint, {
+    post(endpoint, {
       "documentId": insertable.documentId,
       "elementId": insertable.elementId,
       "featureId": "",
@@ -39,9 +39,9 @@ export async function insertPart(insertable: OnshapeInsertable, configuration?: 
       "partId": insertable.partId ? insertable.partId : "",
       "versionId": insertable.versionId,
       "configuration": configuration ? configuration : ""
-    }).then((result) => {
+    }).then(() => {
       resolve(true);
-    }).catch((reason) => {
+    }).catch(() => {
       resolve(false);
     })
   });
@@ -82,13 +82,13 @@ export async function publishPart(insertable: OnshapeInsertable, publish: boolea
 
   const endpoint = `api/saveDocumentData`;
   return new Promise<boolean>((resolve, reject) => {
-    const result = post(endpoint, {
+    post(endpoint, {
       "item": insertable,
       "action": publish ? "REPLACE" : "REMOVE",
       "documentId": insertable.documentId
-    }).then((result) => {
+    }).then(() => {
       resolve(true);
-    }).catch((reason) => {
+    }).catch(() => {
       resolve(false);
     });
   });
