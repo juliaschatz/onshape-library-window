@@ -1,4 +1,4 @@
-import React from "react";
+import React, { SyntheticEvent } from "react";
 
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { Grid, Paper, SvgIcon, Typography, ButtonBase } from "@material-ui/core";
@@ -19,6 +19,7 @@ import { CircularProgress, Button } from '@material-ui/core';
 import { insertPart, publishPart } from "../../utils/api"
 
 import ReactGA from "react-ga" 
+import SvgFavoriteIcon from "../../icons/SvgFavoriteIcon";
 
 
 interface ElementProps {
@@ -110,7 +111,7 @@ export default function InsertableElement(props: ElementProps) {
             (props.insertable.config && props.insertable.config.length > 0 ? <ConfigurablePartIcon className={classes.icon} /> : <PartIcon className={classes.icon} />)}
           </Grid>
           {props.insertable.thumb && <Grid item sm={1}><img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} /></Grid>}
-          <Grid item xl={12}><div><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div></Grid>
+          <Grid item xs={10}><div><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div></Grid>
           {props.isAdminElement && !overrideUpdate && isPublished && props.insertable.versionId !== props.insertable.lastVersion && <Grid item sm><Button
             variant="contained"
             color="primary"
@@ -122,10 +123,12 @@ export default function InsertableElement(props: ElementProps) {
           </Button></Grid>}
           {props.isAdminElement && <Grid item sm={3}><Switch checked={isPublished} onChange={handleSliderToggle} color="primary" /></Grid>}
           {loading && <Grid item xs={3}><CircularProgress /></Grid>}
+
           
         </Grid>
       </Paper>
       </ButtonBase>
+      { !props.isAdminElement && <ButtonBase><SvgFavoriteIcon elementId={props.insertable.elementId}/></ButtonBase> }
       {dialog}
     </Grid>
         

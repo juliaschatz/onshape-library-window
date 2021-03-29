@@ -17,7 +17,7 @@ export default makeStyles((theme: Theme) =>
       height: "3em"
     },
     itemBase: {
-      width: "100%"
+      width: "calc(100% - 24px)"
     },
     title: {
       color: "white"
@@ -42,6 +42,9 @@ export default makeStyles((theme: Theme) =>
     assemblyIcon: {
       width: assemblyIconSize,
       height: assemblyIconSize
+    },
+    favoriteIcon: {
+      color: "yellow"
     }
   })
 );
