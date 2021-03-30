@@ -30,6 +30,9 @@ export async function getOnshapeInsertables(): Promise<OnshapeInsertable[]> {
   return onshapeInsertables;
 }
 
+// Initiate data request asap
+getOnshapeInsertables();
+
 let isAdminResult: boolean = false;
 let knowsAdmin: boolean = false;
 export async function isAdmin(): Promise<boolean> {
