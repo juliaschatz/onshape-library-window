@@ -42,6 +42,9 @@ export default makeStyles((theme: Theme) =>
     assemblyIcon: {
       width: assemblyIconSize,
       height: assemblyIconSize
+    },
+    favoriteIcon: {
+      color: "yellow"
     }
   })
 );
