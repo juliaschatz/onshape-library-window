@@ -23,7 +23,6 @@ let startedFetch: boolean = false;
 export async function getOnshapeInsertables(): Promise<OnshapeInsertable[]> {
   if (!startedFetch) {
     startedFetch = true;
-    console.log("Fetching insertables");
     const insertablePromise: Promise<OnshapeInsertable[]> = getOnshapeInsertablesFromApi();
     onshapeInsertables = insertablePromise;
   }

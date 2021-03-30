@@ -19,7 +19,7 @@ import { CircularProgress, Button } from '@material-ui/core';
 import { insertPart, publishPart } from "../../utils/api"
 
 import ReactGA from "react-ga" 
-import SvgFavoriteIcon from "../../icons/SvgFavoriteIcon";
+import FavoriteButton from "../FavoriteButton";
 
 
 interface ElementProps {
@@ -128,7 +128,7 @@ export default function InsertableElement(props: ElementProps) {
         </Grid>
       </Paper>
       </ButtonBase>
-      { !props.isAdminElement && <ButtonBase><SvgFavoriteIcon elementId={props.insertable.elementId}/></ButtonBase> }
+      { !props.isAdminElement && <FavoriteButton element={props.insertable} /> }
       {dialog}
     </Grid>
         

@@ -9,6 +9,7 @@ import { getOnshapeInsertables } from '../../utils/apiWrapper';
 import InsertableElement from './InsertableElement';
 import { getAllDocumentInsertables } from "../../utils/api";
 import { CircularProgress } from '@material-ui/core';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 
 import { searchOptionsState } from "../../utils/atoms";
 import { useRecoilValue } from 'recoil';
@@ -69,8 +70,8 @@ export default function Document(props: DocumentProps) {
 
     getOnshapeInsertables().then((allInsertables) => {
       let filtered: OnshapeInsertable[] = [];
-      if(props.isFavorites) {
-        filtered = allInsertables.filter(i => favoritesService.isInFavorites(i.elementId));
+      if (props.isFavorites) {
+        filtered = allInsertables.filter(item => favoritesService.isInFavorites(item));
       } else {
         filtered = allInsertables.filter(item => item.documentId === props.doc.id);
       }
@@ -97,22 +98,28 @@ export default function Document(props: DocumentProps) {
     })();
   }, [props.isLazyAllItems]);
 
+  
+  useEffect(() => {
+    if (props.isFavorites) {
+      resetInsertables();
+    }
+  }, [favoritesService.favIds.length]);
+
+  useEffect(() => {
+    resetInsertables(); // Get insertables on first render
+  }, []);
+  
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (props.isLazyAllItems && !latched) {
       setLatched(true);
       setIsLoading(true);
 
-      if(!props.isFavorites) {
-        getAllDocumentInsertables(props.doc.id).then((result) => {
-          setInsertables(result);
-        }).finally(() => {
-          setIsLoading(false);
-        })
-      } else {
-        getOnshapeInsertables().then((allInsertables) => {
-          setInsertables(allInsertables.filter(i => favoritesService.isInFavorites(i.elementId)));
-        });
-      }
+      getAllDocumentInsertables(props.doc.id).then((result) => {
+        setInsertables(result);
+      }).finally(() => {
+        setIsLoading(false);
+      });
       
     }
   }
@@ -133,7 +140,7 @@ export default function Document(props: DocumentProps) {
     return false;
   });
 
-  if (filtered.length === 0 && !props.isLazyAllItems) {
+  if (filtered.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
     return (<></>);
   }
 
@@ -145,7 +152,7 @@ export default function Document(props: DocumentProps) {
     searchedInsertables = filtered;
   }
 
-  if (searchedInsertables.length === 0 && !props.isLazyAllItems) {
+  if (searchedInsertables.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
     return (<></>);
   }
 
@@ -161,7 +168,8 @@ export default function Document(props: DocumentProps) {
           id="panel1a-header"
           onClick={handleClick}
         >
-          <Typography className={classes.heading}>{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
+          {props.isFavorites && <FavoriteBorderIcon fontSize="small" />}
+          <Typography className={classes.heading}>&nbsp;{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
           
           {isLoading && <CircularProgress /> }
         </AccordionSummaryIconLeft>
