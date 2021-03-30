@@ -19,6 +19,8 @@ const url = require('url');
 var api = require('./routes/api');
 var index = require('./routes/index');
 
+const oneHour = 3600000;    // 3600000msec == 1hour
+
 var client;
 if (process.env.REDISTOGO_URL) {
   var rtg   = require("url").parse(process.env.REDISTOGO_URL);
@@ -54,7 +56,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.engine('html', require('hbs').__express);
 app.set('view engine', 'html');
 
-app.disable('etag');
+//app.disable('etag');
 
 var env = process.env.NODE_ENV || 'development';
 app.locals.ENV = env;
@@ -64,9 +66,7 @@ app.use(logger('dev'));
 
 app.use(cookieParser());
 
-app.use(express.static(path.join(__dirname, '..', 'dist')));
-app.use('/signin', express.static(path.join(__dirname, '..', 'dist')));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: oneHour }));
 
 app.use(session({
   store: new RedisStore({
@@ -94,16 +94,13 @@ function ensureAuthenticated(req, res, next) {
     res.status(200);
     return next()
   }
-  var redirect = url.parse(req.url,true).search;
-  if (!redirect) {
-    redirect = "";
-  }
-  res.status(401).redirect('/oauthSignin' + redirect);
+  res.status(401).redirect('/oauthSignin' + url.parse(req.url,true).search);
 }
 
 app.use('/api', api);
 
-app.get('/', ensureAuthenticated, index.renderPage);
+app.use('/application', ensureAuthenticated);
+app.use('/application', express.static(path.join(__dirname, 'public/application'), { maxAge: oneHour })); 
 app.post('/notify', api.sendNotify);
 app.get('/grantDenied', index.grantDenied);
 
@@ -121,12 +118,8 @@ app.use('/oauthSignin', storeExtraParams,
 
 function storeExtraParams(req, res) {
   var redirect = req.query.redirectOnshapeUri;
-  if (redirect === undefined || redirect === null) {
-    var search = url.parse(req.url,true).search;
-    if (search === null) {
-      search = "";
-    }
-    redirect = "/" + search;
+  if (redirect === undefined) {
+    redirect = "/application" + url.parse(req.url,true).search;
   }
 
   var state = {
@@ -161,7 +154,7 @@ app.use('/oauthRedirect',
           if (querystring === null || querystring === undefined) {
             querystring = "";
           }
-          res.redirect("/" + querystring);
+          res.redirect("/application" + querystring);
         }
       });
     });

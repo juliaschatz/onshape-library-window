@@ -13,7 +13,8 @@ const NodeCache = require( "node-cache" );
 
 var  apiUrl = 'https://cad.onshape.com';
 var localUrl = 'https://mkcad.julias.ch/api';
-var mkcadTeamId = "6055ac8bcfae041191f906ae";//"5b620150b2190f0fca90ec10";
+var mkcadTeamId = "5b620150b2190f0fca90ec10";
+var appTeamId = "6055ac8bcfae041191f906ae";
 var brokenImg = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII=";
 
 if (process.env.API_URL) {
@@ -200,6 +201,7 @@ function checkAuth(id) {
 }
 
 function documentList(req, res) {
+  res.setHeader("Cache-Control", "private, max-age=3600");
   res.send(mkcadDocs);
 }
 
@@ -211,7 +213,7 @@ function reprocessConfigurationDef(returnedConfigDef) {
     newParam.name = param.message.parameterName; // Human-readable name
 
     if (param.typeName === "BTMConfigurationParameterQuantity") {
-      // Need to record 
+      // Need to record
       newParam.type = "QUANTITY";
       newParam.quantityType = param.message.quantityType; // length, angle, real, int, etc
       newParam.quantityUnits = param.message.rangeAndDefault.message.units; // inch, mm, deg
@@ -244,7 +246,7 @@ function reprocessConfigurationDef(returnedConfigDef) {
 }
 
 function fetchThumb(item, req, res) {
-  
+
   return new Promise((resolve, reject) => {
     var key;
     if (item.type === "ASSEMBLY" || item.type === "PARTSTUDIO") {
@@ -300,13 +302,13 @@ function fetchThumb(item, req, res) {
         resolve(cached);
       }
     }).catch(() => reject());
-    
+
   });
-  
+
 }
 
 function documentData(req, res) {
-  
+
   checkAuth(req.user.id).then(() => {
     var insertable_data = [];
     var versionPromisesLeft = mkcadDocs.length;
@@ -322,7 +324,7 @@ function documentData(req, res) {
           else {
             oldVerMap[item.elementId] = item.versionId;
           }
-          
+
         });
       }
 
@@ -383,13 +385,13 @@ function documentData(req, res) {
                     item.thumb = thumb;
                   }).catch(() => {}).finally(() => {
                     insertable_data.push(item);
-                    decreaseElements(); 
+                    decreaseElements();
                   });
-                             
+
                 }
                 else if (metaItem.elementType === META.PARTSTUDIO) {
                   // Part studio: Check each item in studio if it's not configurable
-                  if (configOpts.length > 0) {
+                  if (configOpts.length > 0 && false) {
                     var item = {
                       type: "PARTSTUDIO",
                       name: elementName,
@@ -403,11 +405,11 @@ function documentData(req, res) {
                       item.thumb = thumb;
                     }).catch(() => {}).finally(() => {
                       insertable_data.push(item);
-                      decreaseElements(); 
-                    });  
+                      decreaseElements();
+                    });
                   }
                   else {
-                    
+
 
                     partMetaReq = req;
                     partMetaReq.query = {
@@ -424,6 +426,9 @@ function documentData(req, res) {
                       var compositeParts = [];
                       itemMetaResult.items.forEach((part) => {
                         var name = getName(part);
+                        if (configOpts.length > 0) {
+                          name = elementName;
+                        }
                         var item = {
                           type: "PART",
                           name: name,
@@ -435,8 +440,9 @@ function documentData(req, res) {
                           config: configOpts
                         };
                         if (part.partType === "composite") {
+                          
                           compositeParts.push(item);
-                        } 
+                        }
                         else {
                           nonCompositeParts.push(item);
                         }
@@ -461,8 +467,8 @@ function documentData(req, res) {
                             item.thumb = thumb;
                           }).catch(() => {}).finally(() => {
                             insertable_data.push(item);
-                            decreaseElements(); 
-                          }); 
+                            decreaseElements();
+                          });
                         }
                         addParts = nonCompositeParts;
                       }
@@ -496,14 +502,14 @@ function documentData(req, res) {
       }); // versions promise
     }); // storage get
 
-    
+
   }).catch(() => {
     res.status(401).send();
   }); // auth promise
 }
 
 function saveDocumentData(req, res) {
-  
+
   checkAuth(req.user.id).then(() => {
     var insertable_data = [];
     var versionPromisesLeft = mkcadDocs.length;
@@ -531,8 +537,8 @@ function saveDocumentData(req, res) {
       });
 
     });
-    
-    
+
+
   }).catch(() => {
     res.status(401).send();
   }); // auth promise
@@ -573,6 +579,7 @@ function getUserIsMKCadAdmin(req, res) {
 }
 
 function getMKCadData(req, res) {
+  res.setHeader("Cache-Control", "private, max-age=1800");
   var data = [];
   var docsLeft = mkcadDocs.length;
   mkcadDocs.forEach((doc) => {
@@ -581,7 +588,7 @@ function getMKCadData(req, res) {
 
       docsLeft--;
       if (docsLeft === 0) {
-        res.send(data); 
+        res.send(data);
       }
     });
   });
