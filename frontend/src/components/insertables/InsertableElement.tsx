@@ -123,12 +123,13 @@ export default function InsertableElement(props: ElementProps) {
           </Button></Grid>}
           {props.isAdminElement && <Grid item sm={3}><Switch checked={isPublished} onChange={handleSliderToggle} color="primary" /></Grid>}
           {loading && <Grid item xs={3}><CircularProgress /></Grid>}
+          { !props.isAdminElement && <Grid item xs={1}><FavoriteButton element={props.insertable} /></Grid> }
 
           
         </Grid>
       </Paper>
       </ButtonBase>
-      { !props.isAdminElement && <FavoriteButton element={props.insertable} /> }
+      
       {dialog}
     </Grid>
         

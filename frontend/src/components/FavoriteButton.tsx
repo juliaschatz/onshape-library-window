@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { ButtonBase, SvgIcon } from "@material-ui/core";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import SvgFavoriteStrokeIcon from '../icons/SvgFavoriteStrokeIcon';
 import FavoritesService from "../utils/favorites";
 import { OnshapeInsertable } from "../utils/models/OnshapeInsertable";
 
@@ -30,7 +31,7 @@ export default class FavoriteButton extends Component<FavoriteProps> {
   
 
   favoritesService: FavoritesService = FavoritesService.getInstance();
-
+  
   private mouseEnter() {
     this.setState({filled: true})
   }
@@ -39,8 +40,9 @@ export default class FavoriteButton extends Component<FavoriteProps> {
     this.setState({filled: false || this.favoritesService.isInFavorites(this.props.element)});
   }
 
-  private toggleFavorite() {
+  private toggleFavorite(e: React.MouseEvent) {
     this.favoritesService.toggleFavorite(this.props.element);
+    e.stopPropagation(); // Prevent clicking on this from triggering an insert
   }
 
 
@@ -48,7 +50,7 @@ export default class FavoriteButton extends Component<FavoriteProps> {
     const filled = this.state.filled;
     return (
       <ButtonBase onMouseEnter={this.mouseEnter} onMouseLeave={this.mouseLeave} onClick={this.toggleFavorite}>
-        { filled ? <FavoriteIcon color="primary" /> : <FavoriteBorderIcon color="primary" /> }
+        { filled ? /*<SvgFavoriteStrokeIcon />*/ <FavoriteIcon color="secondary" /> : <FavoriteBorderIcon color="inherit" /> }
       </ButtonBase>
     )
   }

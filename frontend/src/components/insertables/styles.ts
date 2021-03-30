@@ -17,7 +17,7 @@ export default makeStyles((theme: Theme) =>
       height: "3em"
     },
     itemBase: {
-      width: "calc(100% - 24px)"
+      width: "100%"
     },
     title: {
       color: "white"

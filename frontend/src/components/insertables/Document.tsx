@@ -10,6 +10,8 @@ import InsertableElement from './InsertableElement';
 import { getAllDocumentInsertables } from "../../utils/api";
 import { CircularProgress } from '@material-ui/core';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import SvgFavoriteStrokeIcon from '../../icons/SvgFavoriteStrokeIcon';
 
 import { searchOptionsState } from "../../utils/atoms";
 import { useRecoilValue } from 'recoil';
@@ -168,7 +170,7 @@ export default function Document(props: DocumentProps) {
           id="panel1a-header"
           onClick={handleClick}
         >
-          {props.isFavorites && <FavoriteBorderIcon fontSize="small" />}
+          {props.isFavorites && <FavoriteIcon fontSize="small" color="secondary" />}
           <Typography className={classes.heading}>&nbsp;{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
           
           {isLoading && <CircularProgress /> }
@@ -185,6 +187,7 @@ export default function Document(props: DocumentProps) {
               p.documentName = props.doc.name;
               return (<InsertableElement insertable={p} key={index} isAdminElement={!!props.isLazyAllItems} />);
             })}
+            {searchedInsertables.length == 0 && props.isFavorites && <Typography>No favorites.</Typography>}
                         
           </Grid>
         </AccordionDetails>
