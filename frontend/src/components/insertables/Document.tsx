@@ -9,6 +9,9 @@ import { getOnshapeInsertables } from '../../utils/apiWrapper';
 import InsertableElement from './InsertableElement';
 import { getAllDocumentInsertables } from "../../utils/api";
 import { CircularProgress } from '@material-ui/core';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import SvgFavoriteStrokeIcon from '../../icons/SvgFavoriteStrokeIcon';
 
 import { searchOptionsState } from "../../utils/atoms";
 import { useRecoilValue } from 'recoil';
@@ -16,6 +19,7 @@ import { useRecoilValue } from 'recoil';
 import { insertablesSearch } from '../../utils/fuzzySearch'
 
 import Fuse from 'fuse.js';
+import FavoritesService from '../../utils/favorites';
 
 const useStyles = makeStyles((theme: Theme) => 
     createStyles({
@@ -48,10 +52,13 @@ const AccordionSummaryIconLeft = withStyles({
 interface DocumentProps {
   doc: OnshapeDocument,
   isLazyAllItems?: boolean,
-  searchText: string
+  searchText: string,
+  isFavorites?: boolean
 }
 
 export default function Document(props: DocumentProps) {
+
+  let favoritesService: FavoritesService = FavoritesService.getInstance();
   const classes = useStyles();
 
   const [insertables, setInsertables] = useState<OnshapeInsertable[]>([]);
@@ -62,8 +69,14 @@ export default function Document(props: DocumentProps) {
   const searchOptions = useRecoilValue(searchOptionsState);
 
   const resetInsertables = () => {
+
     getOnshapeInsertables().then((allInsertables) => {
-      const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+      let filtered: OnshapeInsertable[] = [];
+      if (props.isFavorites) {
+        filtered = allInsertables.filter(item => favoritesService.isInFavorites(item));
+      } else {
+        filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+      }
       setInsertables(filtered);
     });
   };
@@ -87,15 +100,29 @@ export default function Document(props: DocumentProps) {
     })();
   }, [props.isLazyAllItems]);
 
+  
+  useEffect(() => {
+    if (props.isFavorites) {
+      resetInsertables();
+    }
+  }, [favoritesService.favIds.length]);
+
+  useEffect(() => {
+    resetInsertables(); // Get insertables on first render
+  }, []);
+  
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (props.isLazyAllItems && !latched) {
       setLatched(true);
       setIsLoading(true);
+
       getAllDocumentInsertables(props.doc.id).then((result) => {
         setInsertables(result);
       }).finally(() => {
         setIsLoading(false);
-      })
+      });
+      
     }
   }
 
@@ -115,7 +142,7 @@ export default function Document(props: DocumentProps) {
     return false;
   });
 
-  if (filtered.length === 0 && !props.isLazyAllItems) {
+  if (filtered.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
     return (<></>);
   }
 
@@ -127,7 +154,7 @@ export default function Document(props: DocumentProps) {
     searchedInsertables = filtered;
   }
 
-  if (searchedInsertables.length === 0 && !props.isLazyAllItems) {
+  if (searchedInsertables.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
     return (<></>);
   }
 
@@ -143,7 +170,8 @@ export default function Document(props: DocumentProps) {
           id="panel1a-header"
           onClick={handleClick}
         >
-          <Typography className={classes.heading}>{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
+          {props.isFavorites && <FavoriteIcon fontSize="small" color="secondary" />}
+          <Typography className={classes.heading}>&nbsp;{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
           
           {isLoading && <CircularProgress /> }
         </AccordionSummaryIconLeft>
@@ -159,6 +187,7 @@ export default function Document(props: DocumentProps) {
               p.documentName = props.doc.name;
               return (<InsertableElement insertable={p} key={index} isAdminElement={!!props.isLazyAllItems} />);
             })}
+            {searchedInsertables.length == 0 && props.isFavorites && <Typography>No favorites.</Typography>}
                         
           </Grid>
         </AccordionDetails>
