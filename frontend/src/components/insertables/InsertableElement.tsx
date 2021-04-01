@@ -1,4 +1,4 @@
-import React, { SyntheticEvent } from "react";
+import React, { SyntheticEvent, useEffect } from "react";
 
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { Grid, Paper, SvgIcon, Typography, ButtonBase } from "@material-ui/core";
@@ -20,6 +20,7 @@ import { insertPart, publishPart } from "../../utils/api"
 
 import ReactGA from "react-ga" 
 import FavoriteButton from "../FavoriteButton";
+import { preProcessFile } from "typescript";
 
 
 interface ElementProps {
@@ -32,7 +33,6 @@ export default function InsertableElement(props: ElementProps) {
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [overrideUpdate, setOverrideUpdate] = React.useState(false);
-  const [isPublished, setIsPublished] = React.useState(!!props.insertable.lastVersion);
   const [configOpts, setConfigOpts] = React.useState({});
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -71,14 +71,14 @@ export default function InsertableElement(props: ElementProps) {
 
   const handleSliderToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const publish = event.target.checked;
-    setIsPublished(publish);
+    props.insertable.isPublished = publish;
     setLoading(true);
-    setOverrideUpdate(overrideUpdate || publish);
-    publishPart(props.insertable, publish).finally(() => {setLoading(false)});
+    setOverrideUpdate(overrideUpdate || props.insertable.isPublished);
+    publishPart(props.insertable, props.insertable.isPublished).finally(() => {setLoading(false)});
   };
   const handleUpdateButton = () => {
     const publish = true;
-    setIsPublished(publish);
+    props.insertable.isPublished = publish;
     setLoading(true);
     setOverrideUpdate(true);
     publishPart(props.insertable, publish).finally(() => {setLoading(false)});
@@ -91,6 +91,8 @@ export default function InsertableElement(props: ElementProps) {
     configOpts={configOpts} 
     setConfigOpts={setConfigOpts} 
     handleInsert={handleInsert} />;
+
+  const adminIsPublished = props.insertable.isPublished || (props.insertable.isPublished == null && !!props.insertable.lastVersion);
 
   return (
     <Grid item>
@@ -112,7 +114,7 @@ export default function InsertableElement(props: ElementProps) {
           </Grid>
           {props.insertable.thumb && <Grid item sm={1}><img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} /></Grid>}
           <Grid item xs={10}><div><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div></Grid>
-          {props.isAdminElement && !overrideUpdate && isPublished && props.insertable.versionId !== props.insertable.lastVersion && <Grid item sm><Button
+          {props.isAdminElement && !overrideUpdate && adminIsPublished && props.insertable.versionId !== props.insertable.lastVersion && <Grid item sm><Button
             variant="contained"
             color="primary"
             size="small"
@@ -121,7 +123,7 @@ export default function InsertableElement(props: ElementProps) {
           >
             Update
           </Button></Grid>}
-          {props.isAdminElement && <Grid item sm={3}><Switch checked={isPublished} onChange={handleSliderToggle} color="primary" /></Grid>}
+          {props.isAdminElement && <Grid item sm={3}><Switch checked={adminIsPublished} onChange={handleSliderToggle} color="primary" /></Grid>}
           {loading && <Grid item xs={3}><CircularProgress /></Grid>}
           { !props.isAdminElement && <Grid item xs={1}><FavoriteButton element={props.insertable} /></Grid> }
 

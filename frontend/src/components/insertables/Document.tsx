@@ -7,10 +7,11 @@ import { OnshapeDocument } from '../../utils/models/OnshapeDocument'
 import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
 import { getOnshapeInsertables } from '../../utils/apiWrapper';
 import InsertableElement from './InsertableElement';
-import { getAllDocumentInsertables } from "../../utils/api";
-import { CircularProgress } from '@material-ui/core';
+import { getAllDocumentInsertables, publishPart } from "../../utils/api";
+import { CircularProgress, Button } from '@material-ui/core';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
+import NewReleasesIcon from '@material-ui/icons/NewReleases';
 import SvgFavoriteStrokeIcon from '../../icons/SvgFavoriteStrokeIcon';
 
 import { searchOptionsState } from "../../utils/atoms";
@@ -65,6 +66,7 @@ export default function Document(props: DocumentProps) {
   const [latched, setLatched] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expanded, setExpanded] = useState(false);
+  const [overrideUpdate, setOverrideUpdate] = useState(false);
 
   const searchOptions = useRecoilValue(searchOptionsState);
 
@@ -126,6 +128,17 @@ export default function Document(props: DocumentProps) {
     }
   }
 
+  const handleUpdateButton = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setIsLoading(true);
+    setOverrideUpdate(true);
+    const promises = insertables.filter((p: OnshapeInsertable) => (p.isPublished || (p.isPublished == null && !!p.lastVersion)) && p.versionId !== p.lastVersion).map((p) => {
+      p.lastVersion = p.versionId;
+      return publishPart(p, true);
+    });
+    Promise.all(promises).then(() => setIsLoading(false));
+  };
+
   const filtered = insertables.filter(p => {
     if (!searchOptions.part && !searchOptions.asm && !searchOptions.config && !searchOptions.composite) {
       return true;
@@ -174,6 +187,13 @@ export default function Document(props: DocumentProps) {
           <Typography className={classes.heading}>&nbsp;{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
           
           {isLoading && <CircularProgress /> }
+          {props.isLazyAllItems && !props.isFavorites && !overrideUpdate && expanded && insertables.filter((p: OnshapeInsertable) => (p.isPublished || (p.isPublished == null && !!p.lastVersion)) && p.versionId !== p.lastVersion).length > 0 && <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={handleUpdateButton}
+            startIcon={<NewReleasesIcon />}
+          >Update All</Button> }
         </AccordionSummaryIconLeft>
         <AccordionDetails>
           <Grid
