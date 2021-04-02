@@ -15,8 +15,6 @@ import { useRecoilValue } from 'recoil';
 
 import { insertablesSearch } from '../../utils/fuzzySearch'
 
-import Fuse from 'fuse.js';
-
 const useStyles = makeStyles((theme: Theme) => 
     createStyles({
         root: {
@@ -60,7 +58,6 @@ export default function Document(props: DocumentProps) {
   const [expanded, setExpanded] = useState(false);
 
   const searchOptions = useRecoilValue(searchOptionsState);
-  // console.log(searchOptions);
 
   const resetInsertables = () => {
     getOnshapeInsertables().then((allInsertables) => {
