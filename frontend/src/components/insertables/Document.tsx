@@ -113,7 +113,7 @@ export default function Document(props: DocumentProps) {
     if (searchOptions.config && !searchOptions.part && !searchOptions.asm && p.type === 'ASSEMBLY') {
       return true;
     }
-    if (searchOptions.part && searchOptions.part) {
+    if (searchOptions.part && searchOptions.asm) {
       return true;
     }
     return false;

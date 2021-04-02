@@ -14,8 +14,8 @@ import { useState } from 'react';
 
 import classNames from "classnames";
 import { Autocomplete } from "@material-ui/lab";
-import { useRecoilState } from "recoil";
-import { searchOptionsState } from "../../utils/atoms";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { searchOptionsState, searchTextState } from "../../utils/atoms";
 
 // const useStyles = makeStyles((theme: Theme) => ({
 //   root: {
@@ -114,6 +114,7 @@ export function SearchInput(props: SearchInputProps) {
   const [value, setValue] = useState('');
   // const searchOptions = useRecoilValue(searchOptionsState);
   const [searchOptions, setSearchOptions] = useRecoilState(searchOptionsState);
+  const setSearchText = useSetRecoilState(searchTextState);
 
   // const iconClassName = value != '' ? classes.iconButton : classes.iconButtonHidden;
   // const iconClassName = classes.iconButton;
@@ -122,6 +123,10 @@ export function SearchInput(props: SearchInputProps) {
     let options = { ...searchOptions };
     options[key] = false;
     setSearchOptions(options);
+  }
+  function handleSearchInputChange(searchValue: string) {
+    setValue(searchValue);
+    setSearchText(searchValue);
   }
 
   return (
@@ -146,7 +151,7 @@ export function SearchInput(props: SearchInputProps) {
         disableUnderline
         value={value}
         placeholder="Search"
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => handleSearchInputChange(e.target.value)}
       />
       {value !== '' && <IconButton size="small" onClick={() => setValue('')}>
         <ClearIcon />
