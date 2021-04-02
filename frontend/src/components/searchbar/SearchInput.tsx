@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderRadius: '5px',
     // borderColor: 'black',
     borderStyle: 'solid',
+    minHeight: '36px'
 
   },
   chips: {
@@ -125,7 +126,6 @@ export function SearchInput(props: SearchInputProps) {
 
   return (
     <div className={classes.root}>
-      {/* <Chip size="small" avatar={<Avatar>M</Avatar>} label="Clickable" /> */}
       {searchOptions.part && <Chip
         className={classes.chips}
         label="Part"
@@ -154,105 +154,6 @@ export function SearchInput(props: SearchInputProps) {
     </div>
   )
 
-  // return (
-  //   // <Paper className={classNames(classes.root, props.className)}>
-  //   <Autocomplete
-  //     multiple
-  //     options={searchOptions}
-  //     fullWidth
-  //     classes={{
-  //       input: classes.searchColor
-  //     }}
-  //     className={classes.autocomplete}
-  //     defaultValue={[searchOptions[0]]}
-  //     getOptionLabel={(option) => option.title}
-  //     // getOptionSelected={(option, value) => true}
-  //     renderInput={(params) => (
-  //       <TextField
-  //         {...params}
-  //         className={classes.autocomplete}
-  //         InputProps={{
-  //           disableUnderline: true
-  //         }}
-  //         variant="standard"
-  //       // label="Multiple values"
-  //       />
-  //       // <Input
-  //       //   value={value}
-  //       //   fullWidth
-  //       //   className={classes.input}
-  //       //   disableUnderline
-  //       //   disabled={props.disabled}
-  //       //   onChange={(e) => {
-  //       //     if (props.onChange) {
-  //       //       props.onChange(e.target.value);
-  //       //     }
-  //       //     setValue(e.target.value);
-  //       //   }}
-  //       // />
-
-  //     )}
-  //     // PopperComponent={PopperPlaceholder}
-  //     renderOption={() => (<>hellooo</>)}
-  //   />
-  //   // </Paper>
-  // )
-
-  // return (
-  //   <Paper className={classNames(classes.root, props.className)}>
-  //     <div className={classes.searchContainer}>
-  //       <Input
-  //         value={value}
-  //         fullWidth
-  //         className={classes.input}
-  //         disableUnderline
-  //         disabled={props.disabled}
-  //         onChange={(e) => {
-  //           if (props.onChange) {
-  //             props.onChange(e.target.value);
-  //           }
-  //           setValue(e.target.value);
-  //         }}
-  //       />
-  //       {/* <Chip size="small" avatar={<Avatar>M</Avatar>} label="Clickable" /> */}
-  //       {/* </Input> */}
-  //       {value === '' && <IconButton
-  //         onClick={(e) => {
-  //           if (props.onRequestSearch) {
-  //             props.onRequestSearch(value);
-  //           }
-  //         }}
-  //         // className={iconClassName}
-  //         className={classNames(classes.iconButton, classes.searchIconButton, {
-  //           [classes.iconButtonHidden]: value !== "",
-  //         })}
-  //       >
-  //         {React.cloneElement(<SearchIcon />, {
-  //           classes: {
-  //             root: classes.icon
-  //           }
-  //         })}
-  //       </IconButton>}
-
-  //       {value !== '' && <IconButton
-  //         // onClick={handleCancel}
-  //         onClick={() => {
-  //           setValue('');
-  //         }}
-  //         // className={classes.iconButtonHidden}
-  //         className={classNames(classes.iconButton, classes.searchIconButton, {
-  //           [classes.iconButtonHidden]: value === "",
-  //         })}
-  //       // disabled={disabled}
-  //       >
-  //         {React.cloneElement(<ClearIcon />, {
-  //           classes: { root: classes.icon },
-  //         })}
-  //       </IconButton>}
-
-  //     </div>
-  //   </Paper>
-  // )
 }
 
 const searchOptions: SearchOption[] = [
