@@ -29,18 +29,23 @@ const useStyles = makeStyles((theme: Theme) =>
       // flexShrink: 3
     },
     root: {
-      margin: '5px'
+      margin: '5px',
+      borderRadius: '5px',
+      paddingBottom: '5px'
     },
-    search: {
-      flexGrow: 1,
-      position: "relative",
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: fade(theme.palette.common.white, 0.15),
-      marginLeft: 0,
-      [theme.breakpoints.up("sm")]: {
-        width: "auto",
-      },
-    },
+    // search: {
+    //   marginTop: '10px',
+    //   paddingLeft: '9px',
+    //   paddingBottom: '0px',
+    //   flexGrow: 1,
+    //   position: "relative",
+    //   borderRadius: theme.shape.borderRadius,
+    //   backgroundColor: fade(theme.palette.common.white, 0.15),
+    //   marginLeft: 0,
+    //   [theme.breakpoints.up("sm")]: {
+    //     width: "auto",
+    //   },
+    // },
     searchColor: {
       color: "white"
     },
@@ -52,7 +57,8 @@ const useStyles = makeStyles((theme: Theme) =>
       color: theme.palette.text.secondary,
     },
     searchBar: {
-      marginTop: '10px'
+      marginTop: '10px',
+      // height: '40px'
     },
     adminButton: {
       marginTop: '10px',
@@ -82,7 +88,7 @@ export default function Searchbar(props: SearchbarProps) {
   const setSearchOptions = useSetRecoilState(searchOptionsState);
 
   const search = useRecoilValue(searchTextState);
-  
+
   // useEffect(() => {
   //   let button = document.querySelectorAll('button')[0];
   //   clearRef = button;
@@ -95,14 +101,15 @@ export default function Searchbar(props: SearchbarProps) {
     <div >
       <AppBar position="static" color={props.isAdmin ? "secondary" : "primary"} className={classes.root}>
         <Toolbar>
-
           <Grid container spacing={1}>
 
             <Grid item xs={(props.showAdmin ? 9 : 12)}>
               {/* <Paper className={classes.paper}>xs=12</Paper> */}
               {/* <Chip size="small" avatar={<Avatar>M</Avatar>} label="Clickable" /> */}
               {/* <SearchBar className={classes.searchBar} ></SearchBar> */}
-              <SearchInput className={classes.searchBar}/>
+              <div>
+                <SearchInput className={classes.searchBar} />
+              </div>
             </Grid>
 
             {props.showAdmin && <Grid item xs={3}>
@@ -116,14 +123,17 @@ export default function Searchbar(props: SearchbarProps) {
               </Button>
             </Grid>}
 
-            <FilterSwitch name="Part"/>
-            <FilterSwitch name="Assembly"/>
-            <FilterSwitch name="Configurable"/>
+            <FilterSwitch name="Part" optionKey="part"/>
+            <FilterSwitch name="Assembly" optionKey="asm"/>
+            <FilterSwitch name="Configurable" optionKey="config"/>
+
+
+
 
             {/* <Grid item xs={12} > */}
-              {/* <FormControl component="fieldset"> */}
-              {/* <FormGroup aria-label="position" row> */}
-                {/* <Grid item xs={4} >
+            {/* <FormControl component="fieldset"> */}
+            {/* <FormGroup aria-label="position" row> */}
+            {/* <Grid item xs={4} >
                   <FormControlLabel
                     value="top"
                     control={<Switch color="primary" />}
@@ -149,9 +159,9 @@ export default function Searchbar(props: SearchbarProps) {
                     labelPlacement="top"
                   /> */}
 
-                {/* </Grid> */}
+            {/* </Grid> */}
 
-                  {/* <FormControlLabel
+            {/* <FormControlLabel
                     value="start"
                     control={<Switch color="primary" />}
                     label="Start"
@@ -169,8 +179,8 @@ export default function Searchbar(props: SearchbarProps) {
                     label="End"
                     labelPlacement="top"
                   /> */}
-                {/* </FormGroup> */}
-              {/* </FormControl> */}
+            {/* </FormGroup> */}
+            {/* </FormControl> */}
             {/* </Grid> */}
 
             {/* <Grid item xs={6}>

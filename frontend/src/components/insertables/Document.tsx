@@ -60,6 +60,7 @@ export default function Document(props: DocumentProps) {
   const [expanded, setExpanded] = useState(false);
 
   const searchOptions = useRecoilValue(searchOptionsState);
+  // console.log(searchOptions);
 
   const resetInsertables = () => {
     getOnshapeInsertables().then((allInsertables) => {
@@ -110,6 +111,9 @@ export default function Document(props: DocumentProps) {
       return true;
     }
     if (searchOptions.config && !searchOptions.part && !searchOptions.asm && p.type === 'ASSEMBLY') {
+      return true;
+    }
+    if (searchOptions.part && searchOptions.part) {
       return true;
     }
     return false;
