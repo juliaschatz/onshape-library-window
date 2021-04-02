@@ -1,4 +1,4 @@
 #!/bin/bash
 
 scp -r build/* digitalocean:~/mkcad_parts/public
-ssh digitalocean -f 'mv ~/mkcad_parts/public/index.html ~/mkcad_parts/views'
+ssh digitalocean -f 'mv ~/mkcad_parts/public/index.html ~/mkcad_parts/public/application'

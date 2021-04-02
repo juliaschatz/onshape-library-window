@@ -7,9 +7,11 @@ export interface OnshapeInsertable {
     elementId: string;
     versionId: string;
     documentId: string;
+    documentName: string;
     visible?: boolean; // deprecated
     lastVersion?: string;
     ref: number;
     thumb?: string;
     config: Configuration[];
+    isPublished?: boolean;
 }

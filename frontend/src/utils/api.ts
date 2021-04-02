@@ -7,29 +7,35 @@ async function request<T>(endpoint: string): Promise<T> {
     return body;
 }
 
-async function post<T>(endpoint: string, data: any): Promise<T> {
-  const res = await fetch(endpoint, {
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    method: "POST",
-    body: JSON.stringify(data)
+async function post<T>(endpoint: string, data: any): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const res = fetch(endpoint, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+    res.then((response) => {
+      resolve(response);
+    }).catch((reason) => {
+      reject(reason);
+    })
   });
-  const body = await res.json();
-  return body;
+  
 }
 
 export async function insertPart(insertable: OnshapeInsertable, configuration?: string): Promise<boolean> {
   const query = new URLSearchParams(window.location.search);
   const docId = query.get("docId");
-  const wvm = query.get("wvm");
+  //const wvm = query.get("wvm");
   const wvmId = query.get("wvmId");
   const eId = query.get("eId");
 
-  const endpoint = `api/insert?documentId=${docId}&workspaceId=${wvmId}&elementId=${eId}`;
+  const endpoint = `/api/insert?documentId=${docId}&workspaceId=${wvmId}&elementId=${eId}`;
   return new Promise<boolean>((resolve, reject) => {
-    const result = post(endpoint, {
+    post(endpoint, {
       "documentId": insertable.documentId,
       "elementId": insertable.elementId,
       "featureId": "",
@@ -39,32 +45,33 @@ export async function insertPart(insertable: OnshapeInsertable, configuration?: 
       "partId": insertable.partId ? insertable.partId : "",
       "versionId": insertable.versionId,
       "configuration": configuration ? configuration : ""
-    }).then((result) => {
+    }).then(() => {
       resolve(true);
-    }).catch((reason) => {
+    }).catch(() => {
       resolve(false);
     })
   });
 }
 
 export async function getMkcadDocsFromApi(): Promise<OnshapeDocument[]> {
-  const docs = await request<OnshapeDocument[]>("api/mkcadDocs");
+  const docs = await request<OnshapeDocument[]>("/api/mkcadDocs");
   return docs;
 }
 
 export async function getOnshapeInsertablesFromApi(): Promise<OnshapeInsertable[]> {
-  const docs = await request<OnshapeInsertable[]>("api/data");
+  let bust: number = +(localStorage.getItem("bust") ?? "0");
+  const docs = await request<OnshapeInsertable[]>(`/api/data?bust=${bust}`);
   return docs;
 }
 
 export async function getOnshapeInsertablesThumbsFromApi(insertables: OnshapeInsertable[]): Promise<OnshapeInsertable[]> {
-  const docs = await post<OnshapeInsertable[]>("api/thumbs", insertables);
+  const docs = await post<OnshapeInsertable[]>("/api/thumbs", insertables);
   return docs;
 }
 
 export async function getIsAdmin(): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
-    request<{auth: boolean}>("api/isAdmin").then((result) => {
+    request<{auth: boolean}>("/api/isAdmin").then((result) => {
       resolve(result.auth);
     }).catch(() => {
       resolve(false);
@@ -76,24 +83,25 @@ export async function getIsAdmin(): Promise<boolean> {
 }
 
 export async function getAllDocumentInsertables(documentId: string): Promise<OnshapeInsertable[]> {
-  const docs = await request<OnshapeInsertable[]>(`api/documentData?documentId=${documentId}`);
+  const docs = await request<OnshapeInsertable[]>(`/api/documentData?documentId=${documentId}`);
   return docs;
 }
 
 export async function publishPart(insertable: OnshapeInsertable, publish: boolean): Promise<boolean> {
 
-  const endpoint = `api/saveDocumentData`;
+  const endpoint = `/api/saveDocumentData`;
   return new Promise<boolean>((resolve, reject) => {
-    const result = post(endpoint, {
+    post(endpoint, {
       "item": insertable,
       "action": publish ? "REPLACE" : "REMOVE",
       "documentId": insertable.documentId
     }).then((result) => {
+      let bust: number = +(localStorage.getItem("bust") ?? "0");
+      console.log(bust);
+      localStorage.setItem("bust", (bust+1) as any as string);
       resolve(true);
-    }).catch((reason) => {
+    }).catch(() => {
       resolve(false);
     });
   });
 }
-
-getOnshapeInsertablesFromApi();

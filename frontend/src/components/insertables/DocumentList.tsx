@@ -11,80 +11,85 @@ import { useRecoilValue } from 'recoil';
 import { search as FuzzySearch } from '../../utils/fuzzySearch'
 
 import Fuse from 'fuse.js'
+import FavoritesService from '../../utils/favorites';
+import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
 
 const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        root: {
-            paddingTop: '0px',
-            flexGrow: 1,
+  createStyles({
+    root: {
+      paddingTop: '0px',
+      flexGrow: 1,
 
-        },
-    }
-    ));
+    },
+  }
+));
 
 interface DocumentListProps {
   admin: boolean;
 }
 
+class FavoriteDocuments implements OnshapeDocument {
+  constructor() {
+    this.id = '';
+    this.name = 'Favorites'
+    this.insertables = [];
+  }
+  id: string;
+  name: string;
+  insertables: OnshapeInsertable[];
+}
+
 export default function DocumentList(props: DocumentListProps) {
-    const classes = useStyles();
+  const classes = useStyles();
 
-    const [docs, updateDocs] = useState<OnshapeDocument[]>([]);
+  const [docs, updateDocs] = useState<OnshapeDocument[]>([]);
 
-    let filteredResults: OnshapeDocument[] = [];
+  let filteredResults: OnshapeDocument[] = [];
 
-    const searchText = useRecoilValue(searchTextState);
+  let favoritesService: FavoritesService = FavoritesService.getInstance();
+  let favorites: FavoriteDocuments = new FavoriteDocuments();
 
-    // console.log(searchText);
+  const searchText = useRecoilValue(searchTextState);
 
-    useEffect(() => {
-        (async function () {
-            let docs = await getMkcadDocs();
-            updateDocs(docs);
+  // console.log(searchText);
 
-            let insertables = await getOnshapeInsertables();
+  useEffect(() => {
+    (async function () {
+      // Get documents
+      let docs = await getMkcadDocs();
+      updateDocs(docs);
 
-            function getDocByID(documentId: string): OnshapeDocument {
-                for (let i = 0; i < docs.length; i++) {
-                    if (docs[i].id === documentId) {
-                        return docs[i];
-                    }
-                }
-                return docs[0];
-            }
+    })();
+  }, [])
 
-            insertables.forEach(i => {
-                let doc = getDocByID(i.documentId);
-                doc.insertables.push(i);
-            })
-
-        })();
-    }, [])
-
-    if (searchText !== '') {
-      filteredResults = FuzzySearch(searchText, docs).map((res) => res.item);
-    }
-    else {
-      filteredResults = docs;
-    }
+  if (searchText !== '') {
+    filteredResults = FuzzySearch(searchText, docs).map((res) => res.item);
+  }
+  else {
+    filteredResults = docs;
+  }
 
 
-    return (
-        <div className={classes.root}>
-            <Grid
-                container
-                direction='column'
-                justify='flex-end'
-                alignItems='center' 
-                spacing={0}
-            >
-                {filteredResults.length > 0 && filteredResults.sort((a, b) => a.name.localeCompare(b.name)).map((res, index) => {
-                    return (<Document isLazyAllItems={props.admin} key={index} doc={res} searchText={searchText} />);
-                })}
 
-                {/*docs.length > 0 && filteredResults.length === 0 && docs.map((doc, index) => (<Document isLazyAllItems={props.admin} key={index} doc={doc}/>))*/}
-            </Grid>
-        </div>
-    )
+  return (
+    <div className={classes.root}>
+      <Grid
+        container
+        direction='column'
+        justify='flex-end'
+        alignItems='center' 
+        spacing={0}
+      >
+        {/* Favorite Documents */}
+        {!props.admin && <Document isLazyAllItems={false} key={0} doc={favorites} searchText={searchText} isFavorites={true}/>}
+        
+
+        {/* Other Documents */}
+        {filteredResults.length > 0 && filteredResults.sort((a, b) => a.name.localeCompare(b.name)).map((res, index) => {
+            return (<Document isLazyAllItems={props.admin} key={index+1} doc={res} searchText={searchText} isFavorites={false} />);
+        })}
+      </Grid>
+    </div>
+  )
 }
 

@@ -7,13 +7,20 @@ import { OnshapeDocument } from '../../utils/models/OnshapeDocument'
 import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
 import { getOnshapeInsertables } from '../../utils/apiWrapper';
 import InsertableElement from './InsertableElement';
-import { getAllDocumentInsertables } from "../../utils/api";
-import { CircularProgress } from '@material-ui/core';
+import { getAllDocumentInsertables, publishPart } from "../../utils/api";
+import { CircularProgress, Button } from '@material-ui/core';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import NewReleasesIcon from '@material-ui/icons/NewReleases';
+import SvgFavoriteStrokeIcon from '../../icons/SvgFavoriteStrokeIcon';
 
 import { searchOptionsState } from "../../utils/atoms";
 import { useRecoilValue } from 'recoil';
 
 import { insertablesSearch } from '../../utils/fuzzySearch'
+
+import Fuse from 'fuse.js';
+import FavoritesService from '../../utils/favorites';
 
 const useStyles = makeStyles((theme: Theme) => 
     createStyles({
@@ -46,22 +53,32 @@ const AccordionSummaryIconLeft = withStyles({
 interface DocumentProps {
   doc: OnshapeDocument,
   isLazyAllItems?: boolean,
-  searchText: string
+  searchText: string,
+  isFavorites?: boolean
 }
 
 export default function Document(props: DocumentProps) {
+
+  let favoritesService: FavoritesService = FavoritesService.getInstance();
   const classes = useStyles();
 
   const [insertables, setInsertables] = useState<OnshapeInsertable[]>([]);
   const [latched, setLatched] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expanded, setExpanded] = useState(false);
+  const [overrideUpdate, setOverrideUpdate] = useState(false);
 
   const searchOptions = useRecoilValue(searchOptionsState);
 
   const resetInsertables = () => {
+
     getOnshapeInsertables().then((allInsertables) => {
-      const filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+      let filtered: OnshapeInsertable[] = [];
+      if (props.isFavorites) {
+        filtered = allInsertables.filter(item => favoritesService.isInFavorites(item));
+      } else {
+        filtered = allInsertables.filter(item => item.documentId === props.doc.id);
+      }
       setInsertables(filtered);
     });
   };
@@ -85,17 +102,42 @@ export default function Document(props: DocumentProps) {
     })();
   }, [props.isLazyAllItems]);
 
+  
+  useEffect(() => {
+    if (props.isFavorites) {
+      resetInsertables();
+    }
+  }, [favoritesService.favIds.length]);
+
+  useEffect(() => {
+    resetInsertables(); // Get insertables on first render
+  }, []);
+  
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (props.isLazyAllItems && !latched) {
       setLatched(true);
       setIsLoading(true);
+
       getAllDocumentInsertables(props.doc.id).then((result) => {
         setInsertables(result);
       }).finally(() => {
         setIsLoading(false);
-      })
+      });
+      
     }
   }
+
+  const handleUpdateButton = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setIsLoading(true);
+    setOverrideUpdate(true);
+    const promises = insertables.filter((p: OnshapeInsertable) => (p.isPublished || (p.isPublished == null && !!p.lastVersion)) && p.versionId !== p.lastVersion).map((p) => {
+      p.lastVersion = p.versionId;
+      return publishPart(p, true);
+    });
+    Promise.all(promises).then(() => setIsLoading(false));
+  };
 
   const filtered = insertables.filter(p => {
     if (!searchOptions.part && !searchOptions.asm && !searchOptions.config && !searchOptions.composite) {
@@ -116,7 +158,7 @@ export default function Document(props: DocumentProps) {
     return false;
   });
 
-  if (filtered.length === 0 && !props.isLazyAllItems) {
+  if (filtered.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
     return (<></>);
   }
 
@@ -128,7 +170,7 @@ export default function Document(props: DocumentProps) {
     searchedInsertables = filtered;
   }
 
-  if (searchedInsertables.length === 0 && !props.isLazyAllItems) {
+  if (searchedInsertables.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
     return (<></>);
   }
 
@@ -144,9 +186,17 @@ export default function Document(props: DocumentProps) {
           id="panel1a-header"
           onClick={handleClick}
         >
-          <Typography className={classes.heading}>{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
+          {props.isFavorites && <FavoriteIcon fontSize="small" color="secondary" />}
+          <Typography className={classes.heading}>&nbsp;{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
           
           {isLoading && <CircularProgress /> }
+          {props.isLazyAllItems && !props.isFavorites && !overrideUpdate && expanded && insertables.filter((p: OnshapeInsertable) => (p.isPublished || (p.isPublished == null && !!p.lastVersion)) && p.versionId !== p.lastVersion).length > 0 && <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={handleUpdateButton}
+            startIcon={<NewReleasesIcon />}
+          >Update All</Button> }
         </AccordionSummaryIconLeft>
         <AccordionDetails>
           <Grid
@@ -157,8 +207,10 @@ export default function Document(props: DocumentProps) {
             spacing={1}
           >
             {expanded && searchedInsertables && searchedInsertables.length > 0 && searchedInsertables.sort((a, b) => a.name.localeCompare(b.name)).map((p, index) => {
+              p.documentName = props.doc.name;
               return (<InsertableElement insertable={p} key={index} isAdminElement={!!props.isLazyAllItems} />);
             })}
+            {searchedInsertables.length == 0 && props.isFavorites && <Typography>No favorites.</Typography>}
                         
           </Grid>
         </AccordionDetails>

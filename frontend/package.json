@@ -22,6 +22,7 @@
     "react": "^17.0.1",
     "react-chips": "^0.8.0",
     "react-dom": "^17.0.1",
+    "react-ga": "^3.3.0",
     "react-scale-text": "^1.2.2",
     "react-scripts": "^4.0.3",
     "react-textfit": "^1.1.1",
