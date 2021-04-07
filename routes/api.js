@@ -10,12 +10,25 @@ var storage = require('node-persist');
 const { version } = require('os');
 const passport = require('passport');
 const NodeCache = require( "node-cache" );
+const { MongoClient } = require("mongodb");
 
-var  apiUrl = 'https://cad.onshape.com';
+var apiUrl = 'https://cad.onshape.com';
 var localUrl = 'https://mkcad.julias.ch/api';
 var mkcadTeamId = "5b620150b2190f0fca90ec10";
 var appTeamId = "6055ac8bcfae041191f906ae";
 var brokenImg = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII=";
+const mongouri =
+  "mongodb://localhost:27017/?poolSize=20&writeConcern=majority";
+// Create a new MongoClient
+const mongo = new MongoClient(mongouri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+var db;
+mongo.connect().then(() => {
+  console.log("MongoDB Connected");
+  db = mongo.db("insertables");
+});
 
 if (process.env.API_URL) {
   apiUrl = process.env.API_URL;
@@ -259,7 +272,14 @@ function fetchThumb(item, req, res) {
       reject();
       return;
     }
-    storage.get(key).then((cached) => {
+    var template = {
+      documentId: item.documentId,
+      elementId: item.elementId,
+      versionId: item.versionId,
+      partId: item.partId
+    };
+    var thumbs = db.collection("thumbs");
+    thumbs.findOne(template).then((cached) => {
       if (cached === null || cached === undefined) {
         var bbEndpoint;
         var viewsEndpoint;
@@ -285,21 +305,24 @@ function fetchThumb(item, req, res) {
           var thumbPixelSize = view.size / thumbHeight;
           makeAPICall(req, res, viewsEndpoint + '?viewMatrix=' + viewMatrix + '&outputHeight=' + thumbHeight + '&outputWidth=' + thumbWidth + '&pixelSize=' + thumbPixelSize, request.get, true).then((data) => {
             var thumb = data.images[0];
-            storage.set(key, thumb);
+            template.thumb = thumb;
+            thumbs.insertOne(template);
             resolve(thumb);
           }).catch(() => {
             var thumb = brokenImg;
-            storage.set(key, thumb);
+            template.thumb = thumb;
+            thumbs.insertOne(template);
             resolve(thumb);
           });
         }).catch(() => {
           var thumb = brokenImg;
-          storage.set(key, thumb);
+          template.thumb = thumb;
+          thumbs.insertOne(template);
           resolve(thumb);
         });
       }
       else {
-        resolve(cached);
+        resolve(cached.thumb);
       }
     }).catch(() => reject());
 
@@ -314,7 +337,9 @@ function documentData(req, res) {
     var versionPromisesLeft = mkcadDocs.length;
     var documentId = req.query.documentId;
 
-    storage.get(documentId + "_visible").then((visible_items) => {
+    var stored = db.collection("stored");
+
+    stored.find({documentId: documentId}).toArray().then((visible_items) => {
       oldVerMap = {};
       if (visible_items !== undefined && Array.isArray(visible_items)) {
         visible_items.forEach((item) => {
@@ -500,7 +525,7 @@ function documentData(req, res) {
         }); // element meta promise
 
       }); // versions promise
-    }); // storage get
+    }); // db get
 
 
   }).catch(() => {
@@ -517,29 +542,29 @@ function saveDocumentData(req, res) {
     var newItem = req.body.item;
     var action = req.body.action;
 
-    storage.get(documentId+"_visible").then((currentData) => {
-      var i = 0;
-      if (currentData === undefined || !Array.isArray(currentData)) {
-        currentData = [];
-      }
-      for (var i = 0; i < currentData.length; ++i) {
-        var item = currentData[i];
-        if (newItem.elementId === item.elementId && newItem.partId === item.partId) {
-          currentData.splice(i, 1);
-          break;
-        }
-      }
-      if (action === "REPLACE") {
-        currentData.push(newItem);
-      }
-      storage.set(documentId + "_visible", currentData).then(() => {
-        res.status(200).send();
-      });
+    var stored = db.collection("stored");
+    var filterObj = {
+      documentId: newItem.documentId,
+      elementId: newItem.versionId,
+      partId: newItem.partId
+    };
 
-    });
+    var callback = function() {
+      res.status(200).send();
+    };
+    var err = function(er) {
+      console.log(er);
+      res.status(500).send();
+    };
 
-
-  }).catch(() => {
+    if (action === "REPLACE") {
+      stored.updateOne(filterObj, {$set: newItem}, {upsert: true}).then(callback).catch(err);
+    }
+    else if (action === "REMOVE") {
+      stored.deleteOne(filterObj).then(callback).catch(err);
+    }
+  }).catch((err) => {
+    console.log(err);
     res.status(401).send();
   }); // auth promise
 }
@@ -580,18 +605,10 @@ function getUserIsMKCadAdmin(req, res) {
 
 function getMKCadData(req, res) {
   res.setHeader("Cache-Control", "private, max-age=1800");
-  var data = [];
-  var docsLeft = mkcadDocs.length;
-  mkcadDocs.forEach((doc) => {
-    storage.get(doc.id + "_visible").then((docData) => {
-      if (docData !== undefined) data = data.concat(docData);
-
-      docsLeft--;
-      if (docsLeft === 0) {
-        res.send(data);
-      }
-    });
-  });
+  var stored = db.collection("stored");
+  stored.find({}).toArray().then((data) => {
+    res.send(data);
+  })
 }
 
 var getVersions = (req, res) => makeAPICall(req, res, '/api/documents/d/' + req.query.documentId + '/versions', request.get);
