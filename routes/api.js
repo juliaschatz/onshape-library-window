@@ -545,8 +545,9 @@ function saveDocumentData(req, res) {
     var stored = db.collection("stored");
     var filterObj = {
       documentId: newItem.documentId,
-      elementId: newItem.versionId,
-      partId: newItem.partId
+      elementId: newItem.elementId,
+      partId: newItem.partId,
+      type: newItem.type
     };
 
     var callback = function() {
@@ -558,10 +559,13 @@ function saveDocumentData(req, res) {
     };
 
     if (action === "REPLACE") {
-      stored.updateOne(filterObj, {$set: newItem}, {upsert: true}).then(callback).catch(err);
+      stored.updateOne(filterObj, {$set: newItem}, {upsert: true, multi: false}).then(callback).catch(err);
     }
     else if (action === "REMOVE") {
       stored.deleteOne(filterObj).then(callback).catch(err);
+    }
+    else {
+      err("Unrecognized action " + action);
     }
   }).catch((err) => {
     console.log(err);
