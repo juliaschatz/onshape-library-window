@@ -74,6 +74,8 @@ export async function getIsAdmin(): Promise<boolean> {
     request<{auth: boolean}>("/api/isAdmin").then((result) => {
       resolve(result.auth);
     }).catch(() => {
+      resolve(false);
+      return;
       var redirect = `/oauthSignin?redirectOnshapeUri=${encodeURIComponent(window.location.href)}`;
       window.location.href = redirect;
     })
