@@ -140,22 +140,11 @@ export default function Document(props: DocumentProps) {
   };
 
   const filtered = insertables.filter(p => {
-    if (!searchOptions.part && !searchOptions.asm && !searchOptions.config && !searchOptions.composite) {
-      return true;
+    let canShow: boolean = true;
+    if (searchOptions.config) {
+      canShow = p.config.length > 0;
     }
-    if (searchOptions.asm === (p.type === 'ASSEMBLY') && !searchOptions.config) {
-      return true;
-    }
-    if ((searchOptions.part === (p.type === "PART") || searchOptions.part === (p.type === 'PARTSTUDIO')) && searchOptions.asm === (p.type === "ASSEMBLY") && searchOptions.config === (p.config.length > 0)) {
-      return true;
-    }
-    if (searchOptions.config && !searchOptions.part && !searchOptions.asm && p.type === 'ASSEMBLY') {
-      return true;
-    }
-    if (searchOptions.part && searchOptions.asm) {
-      return true;
-    }
-    return false;
+    return canShow && (((p.type === "PART" || p.type === "PARTSTUDIO") && searchOptions.part) || (p.type === "ASSEMBLY" && searchOptions.asm));
   });
 
   if (filtered.length === 0 && !props.isLazyAllItems && !props.isFavorites) {

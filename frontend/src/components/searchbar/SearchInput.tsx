@@ -46,21 +46,6 @@ export function SearchInput() {
 
   return (
     <div className={classes.root}>
-      {searchOptions.part && <Chip
-        className={classes.chips}
-        label="Part"
-        onDelete={() => handleChipDelete('part')}
-      />}
-      {searchOptions.asm && <Chip
-        className={classes.chips}
-        label="Assembly"
-        onDelete={() => handleChipDelete('asm')}
-      />}
-      {searchOptions.config && <Chip
-        className={classes.chips}
-        label="Configurable"
-        onDelete={() => handleChipDelete('config')}
-      />}
       <Input
         className={classes.input}
         disableUnderline
@@ -68,7 +53,7 @@ export function SearchInput() {
         placeholder="Search"
         onChange={(e) => handleSearchInputChange(e.target.value)}
       />
-      {value !== '' && <IconButton size="small" onClick={() => setValue('')}>
+      {value !== '' && <IconButton size="small" onClick={() => {setValue(''); handleSearchInputChange('')}}>
         <ClearIcon />
       </IconButton>}
     </div>
