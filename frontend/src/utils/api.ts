@@ -49,7 +49,7 @@ export async function insertPart(insertable: OnshapeInsertable, configuration?: 
       resolve(true);
     }).catch(() => {
       resolve(false);
-    })
+    });
   });
 }
 
@@ -75,7 +75,6 @@ export async function getIsAdmin(): Promise<boolean> {
       resolve(result.auth);
     }).catch(() => {
       resolve(false);
-      return;
       var redirect = `/oauthSignin?redirectOnshapeUri=${encodeURIComponent(window.location.href)}`;
       window.location.href = redirect;
     })
@@ -97,7 +96,6 @@ export async function publishPart(insertable: OnshapeInsertable, publish: boolea
       "documentId": insertable.documentId
     }).then((result) => {
       let bust: number = +(localStorage.getItem("bust") ?? "0");
-      console.log(bust);
       localStorage.setItem("bust", (bust+1) as any as string);
       resolve(true);
     }).catch(() => {
