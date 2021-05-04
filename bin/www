@@ -3,7 +3,6 @@
 var cluster = require('cluster');
 
 if(cluster.isMaster) {
-    var numWorkers = require('os').cpus().length;
     var numWorkers = 4;
 
     console.log('Master cluster setting up ' + numWorkers + ' workers...');
@@ -24,7 +23,7 @@ if(cluster.isMaster) {
 } else {
     var app = require('../app');
 
-    app.set('port', 443);
+    app.set('port', process.env.PORT);
 
     var server = app.listen(app.get('port'), function() {});
 }

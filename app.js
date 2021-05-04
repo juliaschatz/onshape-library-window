@@ -40,10 +40,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.listen = function () {
-    var server = https.createServer({
-        key: fs.readFileSync('/etc/letsencrypt/live/mkcad.julias.ch/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/mkcad.julias.ch/fullchain.pem')
-    }, app);
+    var server = http.createServer(app);
     return server.listen.apply(server, arguments)
   }
 
