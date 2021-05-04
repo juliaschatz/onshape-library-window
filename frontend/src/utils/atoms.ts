@@ -8,8 +8,8 @@ export const searchTextState = atom({
 export const searchOptionsState = atom({
   key: "searchOptions",
   default: {
-    part: false,
-    asm: false,
+    part: true,
+    asm: true,
     composite: false,
     config: false
   }

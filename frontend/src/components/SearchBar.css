@@ -2,3 +2,7 @@
     color: white;
     background-color: 'pink';
 } */
+
+input.MuiInputBase-input.MuiOutlinedInput-input {
+    color: white;
+}
