@@ -6,29 +6,37 @@ require('dotenv').config();
 
 var oauthClientId;
 var oauthClientSecret;
-var callbackUrl = "https://mkcad.julias.ch/oauthRedirect";
-var oauthUrl = 'https://oauth.onshape.com';
-var apiUrl = 'https://cad.onshape.com';
 
 if (process.env.OAUTH_CLIENT_ID) {
   oauthClientId = process.env.OAUTH_CLIENT_ID;
 }
+else {
+  throw new Error("OAUTH_CLIENT_ID not set");
+}
 if (process.env.OAUTH_CLIENT_SECRET) {
   oauthClientSecret = process.env.OAUTH_CLIENT_SECRET;
 }
-
+else {
+  throw new Error("OAUTH_CLIENT_SECRET not set");
+}
 if (process.env.OAUTH_URL) {
   oauthUrl = process.env.OAUTH_URL;
 }
-
+else {
+  throw new Error("OAUTH_URL not set");
+}
 if (process.env.API_URL) {
   apiUrl = process.env.API_URL;
 }
-
+else {
+  throw new Error("API_URL not set");
+}
 if (process.env.OAUTH_CALLBACK_URL) {
   callbackUrl = process.env.OAUTH_CALLBACK_URL;
 }
-
+else {
+  throw new Error("OAUTH_CALLBACK_URL not set");
+}
 function init() {
   passport.serializeUser(function(user, done) {
     done(null, user);

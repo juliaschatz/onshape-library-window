@@ -6,14 +6,12 @@ var router = express.Router();
 var authentication = require('../authentication');
 var request = require('request-promise');
 var url = require('url');
-var storage = require('node-persist');
 const { version } = require('os');
 const passport = require('passport');
 const NodeCache = require( "node-cache" );
 const { MongoClient } = require("mongodb");
 
 var apiUrl = 'https://cad.onshape.com';
-var localUrl = 'https://mkcad.julias.ch/api';
 var mkcadTeamId = "5b620150b2190f0fca90ec10";
 var appTeamId = "6055ac8bcfae041191f906ae";
 var brokenImg = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII=";
@@ -32,9 +30,6 @@ mongo.connect().then(() => {
 
 if (process.env.API_URL) {
   apiUrl = process.env.API_URL;
-}
-if (process.env.LOCAL_URL) {
-  localUrl = process.env.LOCAL_URL;
 }
 
 var client;
