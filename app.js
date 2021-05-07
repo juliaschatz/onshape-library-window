@@ -28,6 +28,7 @@ if (process.env.REDISTOGO_URL) {
 
   client.auth(rtg.auth.split(":")[1]);
 } else if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
+  console.log("Connecting to redis");
   client = require("redis").createClient(process.env.REDIS_PORT, process.env.REDIS_HOST);
 } else {
   client = redis.createClient();
@@ -40,7 +41,10 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.listen = function () {
-    var server = http.createServer(app);
+    var server = https.createServer({
+        key: fs.readFileSync('/etc/letsencrypt/live/mkcad.julias.ch/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/mkcad.julias.ch/fullchain.pem')
+    }, app);
     return server.listen.apply(server, arguments)
   }
 
