@@ -175,7 +175,7 @@ export default function Document(props: DocumentProps) {
           id="panel1a-header"
           onClick={handleClick}
         >
-          {props.isFavorites && <FavoriteIcon fontSize="small" color="secondary" />}
+          {props.isFavorites && <SvgFavoriteStrokeIcon filled={true} fontSize="small" />}
           <Typography className={classes.heading}>&nbsp;{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
           
           {isLoading && <CircularProgress /> }

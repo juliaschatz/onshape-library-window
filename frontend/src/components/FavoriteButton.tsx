@@ -50,7 +50,8 @@ export default class FavoriteButton extends Component<FavoriteProps> {
     const filled = this.state.filled;
     return (
       <ButtonBase onMouseEnter={this.mouseEnter} onMouseLeave={this.mouseLeave} onClick={this.toggleFavorite}>
-        { filled ? /*<SvgFavoriteStrokeIcon />*/ <FavoriteIcon color="secondary" /> : <FavoriteBorderIcon color="inherit" /> }
+        <SvgFavoriteStrokeIcon filled={filled} fontSize="small" />
+        {/* filled ? <FavoriteIcon color="secondary" /> : <FavoriteBorderIcon color="inherit" /> */}
       </ButtonBase>
     )
   }

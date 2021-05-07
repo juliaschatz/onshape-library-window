@@ -41,8 +41,14 @@ function App() {
 
   const GACode = 'UA-137025363-3';
   useEffect(() => {
-    ReactGA.initialize(GACode);
-    ReactGA.pageview(window.location.pathname + window.location.search);
+    if (window.location.host === "mkcad.julias.ch") {
+      console.log("Starting GA");
+      ReactGA.initialize(GACode);
+      ReactGA.pageview(window.location.pathname + window.location.search);
+    }
+    else {
+      console.log("Skipping GA");
+    }
     
   });
   
