@@ -3,6 +3,7 @@ import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import { Configuration } from "../../utils/models/Configuration";
 import FieldProps from "./FieldProps";
+import {evalMath, NumberWithUnits} from "../../utils/mathEval";
 
 export default function QuantityField(props: FieldProps) {
   const configItem = props.configItem;
@@ -10,14 +11,25 @@ export default function QuantityField(props: FieldProps) {
   const [value, setValue] = React.useState(configItem.default as string);
 
   const onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    const newValue = +event.target.value;
+    /*const newValue = +event.target.value;
     if (isNaN(newValue) || event.target.value.length === 0) {
       setHelperText("Enter a number");
+    }*/
+    try {
+      let result = evalMath(value);
+      setHelperText(result.toString())
+    }
+    catch (err) {
+      setHelperText(err.toString());
     }
   };
 
+  const onFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+  };
+
   const applyChange = (newVal: string) => {
-    if (+newVal === 0 || newVal === "" || newVal === "-" || newVal === "-0") {
+    setValue(newVal);
+    /*if (+newVal === 0 || newVal === "" || newVal === "-" || newVal === "-0") {
       setValue(newVal);
       return;
     }
@@ -41,7 +53,7 @@ export default function QuantityField(props: FieldProps) {
       props.setResult(newResult);      
     } else {
       setHelperText("Enter a number");
-    }
+    }*/
   };
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,11 +68,12 @@ export default function QuantityField(props: FieldProps) {
   return <TextField
     id={configItem.id}
     label={configItem.name}
-    type="number"
+    type="text"
     value={value}
     helperText={helperText}
     onChange={onChange}
     onBlur={onBlur}
+    onFocus={onFocus}
     error={helperText.length > 0}
     InputProps={{
       endAdornment: <InputAdornment position="end">{configItem.quantityUnits ? configItem.quantityUnits : ""}</InputAdornment>,
