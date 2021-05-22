@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "Starting frontend build"
+
+cd frontend
+yarn build
+mkdir -p ../backend/public/application
+cp -r build/* ../backend/public
+mkdir ../backend/public/application
+mv ../backend/public/index.html ../backend/public/application/
