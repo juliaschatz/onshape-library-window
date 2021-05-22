@@ -1,5 +1,6 @@
 .env
 node_modules
 .node-persist
+public
 
 frontend/.vscode/launch.json

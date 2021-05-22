@@ -42,8 +42,8 @@ app.use(bodyParser.urlencoded({
 
 app.listen = function () {
     var server = https.createServer({
-        key: fs.readFileSync('/etc/letsencrypt/live/mkcad.julias.ch/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/mkcad.julias.ch/fullchain.pem')
+        key: fs.readFileSync(process.env.PRIVKEY),
+        cert: fs.readFileSync(process.env.CERT)
     }, app);
     return server.listen.apply(server, arguments)
   }
@@ -73,7 +73,7 @@ app.use(session({
   store: new RedisStore({
     'client': client
   }),
-  secret: 'mkcad',
+  secret: process.env.SESSION_SECRET,
   saveUninitialized: false,
   resave: false,
   cookie: {

@@ -6,17 +6,16 @@ var router = express.Router();
 var authentication = require('../authentication');
 var request = require('request-promise');
 var url = require('url');
+var fs = require('fs');
 const { version } = require('os');
 const passport = require('passport');
 const NodeCache = require( "node-cache" );
 const { MongoClient } = require("mongodb");
 
 var apiUrl = 'https://cad.onshape.com';
-var mkcadTeamId = "5b620150b2190f0fca90ec10";
-var appTeamId = "6055ac8bcfae041191f906ae";
+var adminTeamId = process.env.ADMIN_TEAM;
 var brokenImg = "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII=";
-const mongouri =
-  "mongodb://localhost:27017/?poolSize=20&writeConcern=majority";
+const mongouri = process.env.MONGODB_URI;
 // Create a new MongoClient
 const mongo = new MongoClient(mongouri, {
   useNewUrlParser: true,
@@ -143,41 +142,7 @@ function callInsert(req, res) {
   });
 }
 
-var mkcadDocs = [
-  {id: "92b0b8a2272e065eb151c20c", name: "Bearings"},
-  {id: "c65881710a5484494e734574", name: "Bearings (Configurable)"},
-  {id: "fbf06ec10d1fea773b1945a4", name: "Configurable Versaplanetary"},
-  {id: "11dea59fcde97bd96bad66d1", name: "Electronics"},
-  {id: "bf01f7bc3ee2be305acdb76d", name: "Extrusions (Configurable)"},
-  {id: "8d7236e497bf1e271e21fbd2", name: "Fasteners"},
-  {id: "4506675fee630d7eab89d419", name: "Featurescript"},
-  {id: "bb4c8ef637000fb8f8c8b4ab", name: "FIRST FRC Infinite Recharge 2020 Field"},
-  {id: "c867aae748085e5905211125", name: "Gearboxes"},
-  {id: "92ef235726d5987b44918f0f", name: "Gears"},
-  {id: "a649b1465060ffc7ed51867c", name: "Gears (Configurable)"},
-  {id: "c2a381dccb443d1ba020579d", name: "Gussets & Brackets"},
-  {id: "264a272835dc33c2301ab854", name: "Hubs"},
-  {id: "762fca97a6ea961cdb515adc", name: "KOP Chassis (Configurable)"},
-  {id: "b408248c9b853832dd903b35", name: "Minimal Versaplanetary"},
-  {id: "2979144bb1e87ddd1747e172", name: "Motors"},
-  {id: "baeab27eca5a2da03d2940bf", name: "Pneumatics"},
-  {id: "a0b589f74b21e8886d697efc", name: "Pulleys"},
-  {id: "3f9b0609904c94487985b0d4", name: "Pulleys (Configurable)"},
-  {id: "e7db41383a7c6fd072a03821", name: "REV FTC Parts"},
-  {id: "e83eca3cba69ccda678d5a93", name: "Sensors"},
-  {id: "5cdc0fcf2f21e1a9e1de3191", name: "Shaft Retention"},
-  {id: "921b031c460b21500bb32999", name: "Shafts (Configurable)"},
-  {id: "9dfa04979f86ad20d2148621", name: "Spacers"},
-  {id: "d49082876e0a537892bb9185", name: "Spacers (Configurable)"},
-  {id: "ce30248c20c1959e634360bc", name: "Sprockets"},
-  {id: "2530db2e553cef7eb5219903", name: "Sprockets and Chain (Configurable)"},
-  {id: "2cad51ee956f732494213c6e", name: "Swerve"},
-  {id: "163ea37a81632276cb7f5378", name: "Tube spacers (Configurable)"},
-  {id: "8d9364e07015ad58febba74d", name: "Versa"},
-  {id: "f895084b6f1942fd88e4e61f", name: "VersaRoller (Configurable)"},
-  {id: "a94a3f196b6166e347eaf907", name: "Wheels"},
-  {id: "7eff62b5c5f1cd74d9f6fc64", name: "Wheels (Configurable)"}
-];
+var documents = JSON.parse(fs.readFileSync('documents.json', 'utf8'));;
 var META = {
   ASSEM: 1,
   PARTSTUDIO: 0
@@ -195,7 +160,7 @@ function getName(metaItem) {
 
 function checkAuth(id) {
   return new Promise((resolve, reject) => {
-    client.get("mkcad" + id, function(getError, data) {
+    client.get("auth" + id, function(getError, data) {
       if (getError) throw getError;
 
       if (data !== null && data) {
@@ -210,7 +175,7 @@ function checkAuth(id) {
 
 function documentList(req, res) {
   res.setHeader("Cache-Control", "private, max-age=3600");
-  res.send(mkcadDocs);
+  res.send(documents);
 }
 
 function reprocessConfigurationDef(returnedConfigDef) {
@@ -329,7 +294,7 @@ function documentData(req, res) {
 
   checkAuth(req.user.id).then(() => {
     var insertable_data = [];
-    var versionPromisesLeft = mkcadDocs.length;
+    var versionPromisesLeft = documents.length;
     var documentId = req.query.documentId;
 
     var stored = db.collection("stored");
@@ -532,7 +497,7 @@ function saveDocumentData(req, res) {
 
   checkAuth(req.user.id).then(() => {
     var insertable_data = [];
-    var versionPromisesLeft = mkcadDocs.length;
+    var versionPromisesLeft = documents.length;
     var documentId = req.body.documentId;
     var newItem = req.body.item;
     var action = req.body.action;
@@ -568,12 +533,12 @@ function saveDocumentData(req, res) {
   }); // auth promise
 }
 
-function getUserIsMKCadAdmin(req, res) {
+function getUserIsAdmin(req, res) {
   // Temporary shim
-  // client.set("mkcad" + req.user.id, true);
+  // client.set("auth" + req.user.id, true);
   //res.send({auth: true});
   //return;
-  var targetUrl = apiUrl + "/api/teams/" + mkcadTeamId;
+  var targetUrl = apiUrl + "/api/teams/" + adminTeamId;
   request.get({
     uri: targetUrl,
     json: true,
@@ -582,13 +547,13 @@ function getUserIsMKCadAdmin(req, res) {
       'Authorization': 'Bearer ' + req.user.accessToken
     }
   }).then((data) => {
-    client.set("mkcad" + req.user.id, true);
+    client.set("auth" + req.user.id, true);
     res.send({auth: true});
   }).catch((data) => {
     console.log("CATCH " + data.statusCode);
     if (data.statusCode === 401) {
       authentication.refreshOAuthToken(req, res).then(function() {
-        getUserIsMKCadAdmin(req, res);
+        getUserIsAdmin(req, res);
       }).catch(function(err) {
         console.log('Error refreshing token: ', err);
       });
@@ -602,7 +567,7 @@ function getUserIsMKCadAdmin(req, res) {
   });
 }
 
-function getMKCadData(req, res) {
+function getData(req, res) {
   res.setHeader("Cache-Control", "private, max-age=1800");
   var stored = db.collection("stored");
   stored.find({}).toArray().then((data) => {
@@ -658,10 +623,10 @@ function makeThumbView(boundingBox) {
 
 
 // Non-passthrough API
-router.get('/data', getMKCadData);
+router.get('/data', getData);
 router.get('/documentData', documentData);
 router.post('/saveDocumentData', saveDocumentData);
-router.get('/isAdmin', getUserIsMKCadAdmin);
-router.get('/mkcadDocs', documentList);
+router.get('/isAdmin', getUserIsAdmin);
+router.get('/documents', documentList);
 
 module.exports = router;
