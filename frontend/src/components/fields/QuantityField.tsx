@@ -1,7 +1,5 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import { Configuration } from "../../utils/models/Configuration";
 import FieldProps from "./FieldProps";
 import {evalMath, UNIT_MAP, unitless} from "../../utils/mathEval";
 
@@ -12,17 +10,17 @@ export default function QuantityField(props: FieldProps) {
   const [dispValue, setDispValue] = React.useState("");
   const [isFocused, setIsFocused] = React.useState(false);
 
-  const setErrorState = (err: boolean) => {
+  const setErrorState = React.useCallback((err: boolean) => {
     const newErrors = {...props.errors};
     newErrors[configItem.id] = err;
     props.setErrors(newErrors); 
-  }
+  }, [props.errors, configItem.id, props.setErrors]);
 
-  const setResult = (res: any) => {
+  const setResult = React.useCallback((res: any) => {
     const newResult = {...props.results};
     newResult[configItem.id] = `${res}${configItem.quantityUnits ? `+${configItem.quantityUnits}` : ""}`;
     props.setResult(newResult);
-  }
+  }, [props.results, configItem.id, configItem.quantityUnits, props.setResult]);
 
   const onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(false);
@@ -81,7 +79,7 @@ export default function QuantityField(props: FieldProps) {
     // Set default
     setResult(configItem.default);
     setErrorState(false);
-  }, []);
+  }, [configItem.default, configItem.quantityUnits, setErrorState, setResult]);
   
   
   return <TextField

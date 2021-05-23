@@ -3,8 +3,10 @@
 echo "Starting frontend build"
 
 cd frontend
+cp ../.env .
 yarn build
-mkdir -p ../backend/public/application
+[ -d ../backend/public/application ] || mkdir -p ../backend/public/application
 cp -r build/* ../backend/public
 mkdir ../backend/public/application
 mv ../backend/public/index.html ../backend/public/application/
+echo "Completed moving files"

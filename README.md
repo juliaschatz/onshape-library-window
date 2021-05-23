@@ -20,6 +20,7 @@ Element right panel:
 ## Environment
 Place the following in a file named .env in the working directory of the app.
 ```
+# Server Side
 OAUTH_CLIENT_ID=<acquired from onshape dev portal>
 OAUTH_CLIENT_SECRET=<acquired from onshape dev portal>
 OAUTH_CALLBACK_URL=https://mybaseurl.com/oauthRedirect
@@ -36,6 +37,12 @@ MONGODB_URI=mongodb://<mongodb ip/url:port>/?poolSize=20&writeConcern=majority
 
 REDIS_HOST=<redis ip/url>
 REDIS_PORT=<redis port>
+
+# Client Side
+REACT_APP_GACODE=UA-xxxxxxxx-xx
+REACT_APP_BASE_URL=mybaseurl.com
+REACT_APP_PAGE_TITLE=My Cool Library
+REACT_APP_DESCRIPTION=App to insert cool library parts
 ```
 The following is a sample systemd service file for the application.
 ```

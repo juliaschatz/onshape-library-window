@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 
-import { ButtonBase, SvgIcon } from "@material-ui/core";
-import FavoriteIcon from "@material-ui/icons/Favorite";
-import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import { ButtonBase } from "@material-ui/core";
 import SvgFavoriteStrokeIcon from '../icons/SvgFavoriteStrokeIcon';
 import FavoritesService from "../utils/favorites";
 import { OnshapeInsertable } from "../utils/models/OnshapeInsertable";

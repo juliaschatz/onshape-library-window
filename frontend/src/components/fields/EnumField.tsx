@@ -1,36 +1,27 @@
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import Select from "@material-ui/core/Select";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
-import { Configuration } from "../../utils/models/Configuration";
-import { fade, makeStyles, Theme, createStyles, createMuiTheme } from "@material-ui/core/styles";
 import FieldProps from "./FieldProps";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    
-  }),
-);
 
 export default function EnumField(props: FieldProps) {
   const configItem = props.configItem;
   const [value, setValue] = React.useState(configItem.default as string);
-  const classes = useStyles();
 
-  const applyChange = (newValue: string) => {
+  const applyChange = useCallback((newValue: string) => {
     setValue(newValue);
     const newResult = {...props.results};
     newResult[configItem.id] = newValue;
     props.setResult(newResult);
-  }
+  }, [setValue, props.results, props.setResult, configItem.id]);
 
   const onChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     applyChange(event.target.value as string);
   };
 
-  React.useEffect(()=>{
+  useEffect(()=>{
     applyChange(configItem.default as string);
-  }, []);
+  }, [applyChange, configItem.default]);
 
   const label_id = `label-${configItem.id}`;
   return <div><InputLabel shrink id={label_id}>{configItem.name}</InputLabel>

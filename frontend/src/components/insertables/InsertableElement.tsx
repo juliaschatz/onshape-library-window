@@ -1,7 +1,5 @@
-import React, { SyntheticEvent, useEffect } from "react";
-
-import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
-import { Grid, Paper, SvgIcon, Typography, ButtonBase } from "@material-ui/core";
+import React from "react";
+import { Grid, Paper, Typography, ButtonBase } from "@material-ui/core";
 import NewReleasesIcon from '@material-ui/icons/NewReleases';
 import Switch from '@material-ui/core/Switch';
 
@@ -20,7 +18,6 @@ import { insertPart, publishPart } from "../../utils/api"
 
 import ReactGA from "react-ga" 
 import FavoriteButton from "../FavoriteButton";
-import { preProcessFile } from "typescript";
 
 
 interface ElementProps {
@@ -112,7 +109,7 @@ export default function InsertableElement(props: ElementProps) {
             (props.insertable.config && props.insertable.config.length > 0 ? <ConfigurableAssemblyIcon className={classes.icon} /> : <AssemblyIcon className={classes.icon} />) : 
             (props.insertable.config && props.insertable.config.length > 0 ? <ConfigurablePartIcon className={classes.icon} /> : <PartIcon className={classes.icon} />)}
           </Grid>
-          {props.insertable.thumb && <Grid item sm={1}><img className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} /></Grid>}
+          {props.insertable.thumb && <Grid item sm={1}><img alt="Part Thumbnail" className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} /></Grid>}
           <Grid item xs={10}><div><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div></Grid>
           {props.isAdminElement && !overrideUpdate && adminIsPublished && props.insertable.versionId !== props.insertable.lastVersion && <Grid item sm><Button
             variant="contained"
