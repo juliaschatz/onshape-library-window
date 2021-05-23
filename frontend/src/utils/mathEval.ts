@@ -184,7 +184,7 @@ export function evalMath(input: string): NumberWithUnits {
   let regex_ = new RegExp(regex, 'g');
 
   // Initial replacements- pi, ', and "
-  input = input.toLowerCase().replaceAll("pi", `${Math.PI}`).replaceAll("\"", "in").replaceAll("\'", "ft");
+  input = input.toLowerCase().replaceAll("pi", `${Math.PI}`).replaceAll("\"", "in").replaceAll("'", "ft");
   // We use @ to stand in for * for units so we can change its precedence and behavior separately
   // Also get rid of all whitespace
   input = input.toLowerCase().replaceAll(/(\d+)/g, " $1 ").replaceAll(regex_, "@$1").replaceAll(/\s+/g, '');
@@ -236,7 +236,7 @@ export function evalMath(input: string): NumberWithUnits {
       }
       else { // Token is an operator
         while (opstack.length > 0 
-          && (precedenceCompare(opstack[opstack.length-1], c) > 0 || (!isRightAssoc(c) && precedenceCompare(opstack[opstack.length-1], c) == 0)) 
+          && (precedenceCompare(opstack[opstack.length-1], c) > 0 || (!isRightAssoc(c) && precedenceCompare(opstack[opstack.length-1], c) === 0)) 
           && opstack[opstack.length-1] !== "(") {
           outqueue.push(opstack.pop()!);
         }

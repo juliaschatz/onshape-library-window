@@ -1,4 +1,0 @@
-#!/bin/bash
-
-scp -r build/* digitalocean:~/mkcad_test/onshape-library-window/public
-ssh digitalocean -f 'mv ~/mkcad_test/onshape-library-window/public/index.html ~/mkcad_test/onshape-library-window/public/application'

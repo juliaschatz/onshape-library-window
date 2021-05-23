@@ -3,8 +3,7 @@ import React, { useEffect } from 'react';
 import DocumentList from "./components/insertables/DocumentList";
 import SearchBar from "./components/SearchBar";
 import "./styles.css";
-import { getIsAdmin } from "./utils/api";
-import { isAdmin, getOnshapeInsertables } from "./utils/apiWrapper";
+import { isAdmin } from "./utils/apiWrapper";
 
 import { RecoilRoot } from "recoil";
 
@@ -39,9 +38,9 @@ function App() {
     setShowAdmin(showAdm);
   });
 
-  const GACode = 'UA-137025363-3';
+  const GACode = process.env.REACT_APP_GACODE;
   useEffect(() => {
-    if (window.location.host === "mkcad.julias.ch") {
+    if (GACode && window.location.host === process.env.REACT_APP_BASE_URL) {
       console.log("Starting GA");
       ReactGA.initialize(GACode);
       ReactGA.pageview(window.location.pathname + window.location.search);
