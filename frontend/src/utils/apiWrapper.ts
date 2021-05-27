@@ -1,17 +1,17 @@
 import { OnshapeDocument } from "./models/OnshapeDocument";
 import { OnshapeInsertable } from "./models/OnshapeInsertable";
 
-import { getMkcadDocsFromApi, getOnshapeInsertablesFromApi, getIsAdmin } from "./api";
+import { getDocsFromApi, getOnshapeInsertablesFromApi, getIsAdmin } from "./api";
 
 //let onshapeDocs: OnshapeDocument[] = [];
 let onshapeInsertables: Promise<OnshapeInsertable[]>;
 
-export async function getMkcadDocs(): Promise<OnshapeDocument[]> {
+export async function getDocs(): Promise<OnshapeDocument[]> {
   // console.log(`onshape docs length: ${onshapeDocs.length}`)
   // if (onshapeDocs.length === 0) {
-  //   onshapeDocs = await getMkcadDocsFromApi();
+  //   onshapeDocs = await getDocsFromApi();
   // }
-  let docs = await getMkcadDocsFromApi();
+  let docs = await getDocsFromApi();
   docs.forEach(doc => {
     doc.insertables = [];
   })

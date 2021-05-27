@@ -1,15 +1,13 @@
-import { makeStyles, Theme, createStyles, createMuiTheme } from '@material-ui/core/styles';
+import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 
 import React, { useEffect, useState } from 'react'
 
-import { Button, Divider, Grid } from "@material-ui/core";
+import { Button, Grid } from "@material-ui/core";
 import { SwapHoriz } from "@material-ui/icons";
 
 import "./SearchBar.css";
-
-import { FilterSwitch } from './searchbar/FilterSwitch';
 
 import { SearchInput } from "./searchbar/SearchInput";
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';

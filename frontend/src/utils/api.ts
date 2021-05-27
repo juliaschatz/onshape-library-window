@@ -7,7 +7,7 @@ async function request<T>(endpoint: string): Promise<T> {
     return body;
 }
 
-async function post<T>(endpoint: string, data: any): Promise<any> {
+async function post<T>(endpoint: string, data: any): Promise<T> {
   return new Promise((resolve, reject) => {
     const res = fetch(endpoint, {
       headers: {
@@ -18,7 +18,7 @@ async function post<T>(endpoint: string, data: any): Promise<any> {
       body: JSON.stringify(data)
     });
     res.then((response) => {
-      resolve(response);
+      resolve(response as unknown as T);
     }).catch((reason) => {
       reject(reason);
     })
@@ -53,8 +53,8 @@ export async function insertPart(insertable: OnshapeInsertable, configuration?: 
   });
 }
 
-export async function getMkcadDocsFromApi(): Promise<OnshapeDocument[]> {
-  const docs = await request<OnshapeDocument[]>("/api/mkcadDocs");
+export async function getDocsFromApi(): Promise<OnshapeDocument[]> {
+  const docs = await request<OnshapeDocument[]>("/api/documents");
   return docs;
 }
 

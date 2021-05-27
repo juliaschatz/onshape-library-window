@@ -42,8 +42,8 @@ app.use(bodyParser.urlencoded({
 
 app.listen = function () {
     var server = https.createServer({
-        key: fs.readFileSync('/etc/letsencrypt/live/mkcad.julias.ch/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/mkcad.julias.ch/fullchain.pem')
+        key: fs.readFileSync(process.env.PRIVKEY),
+        cert: fs.readFileSync(process.env.CERT)
     }, app);
     return server.listen.apply(server, arguments)
   }
@@ -73,7 +73,7 @@ app.use(session({
   store: new RedisStore({
     'client': client
   }),
-  secret: 'mkcad',
+  secret: process.env.SESSION_SECRET,
   saveUninitialized: false,
   resave: false,
   cookie: {
@@ -123,13 +123,10 @@ function storeExtraParams(req, res) {
     redirect = "/application" + url.parse(req.url,true).search;
   }
 
-  var state = {
-    redirect: redirect
-  };
-
-  var stateString = JSON.stringify(state);
-  var uniqueID = "state" + req.sessionID;
-  client.set(uniqueID, stateString);
+  res.cookie("redirect", redirect, {
+    secure: true,
+    sameSite: 'none'
+  });
 
   return passport.authenticate("onshape")(req, res);
 }
@@ -143,21 +140,17 @@ app.use('/oauthRedirect',
     passport.authenticate('onshape', { failureRedirect: '/grantDenied' }),
     function(req, res) {
       var uniqueID = "state" + req.sessionID;
-      client.get(uniqueID, function(err, reply) {
-        // reply is null when the key is missing
-        if (reply != null) {
-          
-          var newParams = JSON.parse(reply);
-          res.redirect(newParams.redirect);
+      var redirect = req.cookies['redirect'];
+      if (redirect) {
+        res.redirect(redirect);
+      }
+      else {
+        var querystring = url.parse(req.url,true).search;
+        if (querystring === null || querystring === undefined) {
+          querystring = "";
         }
-        else {
-          var querystring = url.parse(req.url,true).search;
-          if (querystring === null || querystring === undefined) {
-            querystring = "";
-          }
-          res.redirect("/application" + querystring);
-        }
-      });
+        res.redirect("/application" + querystring);
+      }
     });
 
 /// catch 404 and forward to error handler

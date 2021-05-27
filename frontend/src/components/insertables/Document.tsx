@@ -1,5 +1,5 @@
 import { Theme, makeStyles, createStyles, Grid, Accordion, AccordionDetails, AccordionSummary, Typography, withStyles } from '@material-ui/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import ExpandMore from '@material-ui/icons/ExpandMore';
 
@@ -9,8 +9,6 @@ import { getOnshapeInsertables } from '../../utils/apiWrapper';
 import InsertableElement from './InsertableElement';
 import { getAllDocumentInsertables, publishPart } from "../../utils/api";
 import { CircularProgress, Button } from '@material-ui/core';
-import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
-import FavoriteIcon from '@material-ui/icons/Favorite';
 import NewReleasesIcon from '@material-ui/icons/NewReleases';
 import SvgFavoriteStrokeIcon from '../../icons/SvgFavoriteStrokeIcon';
 
@@ -19,7 +17,6 @@ import { useRecoilValue } from 'recoil';
 
 import { insertablesSearch } from '../../utils/fuzzySearch'
 
-import Fuse from 'fuse.js';
 import FavoritesService from '../../utils/favorites';
 
 const useStyles = makeStyles((theme: Theme) => 
@@ -70,7 +67,7 @@ export default function Document(props: DocumentProps) {
 
   const searchOptions = useRecoilValue(searchOptionsState);
 
-  const resetInsertables = () => {
+  const resetInsertables = useCallback(() => {
 
     getOnshapeInsertables().then((allInsertables) => {
       let filtered: OnshapeInsertable[] = [];
@@ -81,7 +78,7 @@ export default function Document(props: DocumentProps) {
       }
       setInsertables(filtered);
     });
-  };
+  }, [props.isFavorites, favoritesService, props.doc.id, setInsertables]);
 
   useEffect(() => {
     (async function () {
@@ -89,7 +86,7 @@ export default function Document(props: DocumentProps) {
         resetInsertables();
       }
     })();
-  }, [props.doc.id]);
+  }, [props.doc.id, props.isLazyAllItems, resetInsertables]);
 
   useEffect(() => {
     (async function () {
@@ -100,18 +97,18 @@ export default function Document(props: DocumentProps) {
         resetInsertables();
       }
     })();
-  }, [props.isLazyAllItems]);
+  }, [props.isLazyAllItems, resetInsertables, setInsertables, setExpanded, setLatched]);
 
   
   useEffect(() => {
     if (props.isFavorites) {
       resetInsertables();
     }
-  }, [favoritesService.favIds.length]);
+  }, [favoritesService.favIds.length, props.isFavorites, resetInsertables]);
 
   useEffect(() => {
     resetInsertables(); // Get insertables on first render
-  }, []);
+  }, [resetInsertables]);
   
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -199,7 +196,7 @@ export default function Document(props: DocumentProps) {
               p.documentName = props.doc.name;
               return (<InsertableElement insertable={p} key={index} isAdminElement={!!props.isLazyAllItems} />);
             })}
-            {searchedInsertables.length == 0 && props.isFavorites && <Typography>No favorites.</Typography>}
+            {searchedInsertables.length === 0 && props.isFavorites && <Typography>No favorites.</Typography>}
                         
           </Grid>
         </AccordionDetails>

@@ -1,7 +1,5 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import { Configuration } from "../../utils/models/Configuration";
 import FieldProps from "./FieldProps";
 import {evalMath, UNIT_MAP, unitless} from "../../utils/mathEval";
 
@@ -16,13 +14,13 @@ export default function QuantityField(props: FieldProps) {
     const newErrors = {...props.errors};
     newErrors[configItem.id] = err;
     props.setErrors(newErrors); 
-  }
+  };
 
   const setResult = (res: any) => {
     const newResult = {...props.results};
     newResult[configItem.id] = `${res}${configItem.quantityUnits ? `+${configItem.quantityUnits}` : ""}`;
     props.setResult(newResult);
-  }
+  };
 
   const onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(false);

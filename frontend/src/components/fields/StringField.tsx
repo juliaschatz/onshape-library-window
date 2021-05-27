@@ -1,7 +1,5 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import { Configuration } from "../../utils/models/Configuration";
 import FieldProps from "./FieldProps";
 
 export default function StringField(props: FieldProps) {

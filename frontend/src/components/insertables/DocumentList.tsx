@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Document from './Document';
-import { getMkcadDocs, getOnshapeInsertables } from '../../utils/apiWrapper'
+import { getDocs } from '../../utils/apiWrapper'
 
 import { Theme, makeStyles, createStyles, Grid } from '@material-ui/core';
 import { OnshapeDocument } from '../../utils/models/OnshapeDocument';
@@ -10,8 +10,6 @@ import { useRecoilValue } from 'recoil';
 
 import { search as FuzzySearch } from '../../utils/fuzzySearch'
 
-import Fuse from 'fuse.js'
-import FavoritesService from '../../utils/favorites';
 import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -46,7 +44,6 @@ export default function DocumentList(props: DocumentListProps) {
 
   let filteredResults: OnshapeDocument[] = [];
 
-  let favoritesService: FavoritesService = FavoritesService.getInstance();
   let favorites: FavoriteDocuments = new FavoriteDocuments();
 
   const searchText = useRecoilValue(searchTextState);
@@ -56,7 +53,7 @@ export default function DocumentList(props: DocumentListProps) {
   useEffect(() => {
     (async function () {
       // Get documents
-      let docs = await getMkcadDocs();
+      let docs = await getDocs();
       updateDocs(docs);
 
     })();

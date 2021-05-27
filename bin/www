@@ -21,7 +21,7 @@ if(cluster.isMaster) {
         cluster.fork();
     });
 } else {
-    var app = require('../app');
+    var app = require('../backend/app');
 
     app.set('port', process.env.PORT);
 
