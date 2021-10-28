@@ -64,6 +64,7 @@ export default function Document(props: DocumentProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expanded, setExpanded] = useState(false);
   const [overrideUpdate, setOverrideUpdate] = useState(false);
+  const [lastSearchText, setLastSearchText] = useState("");
 
   const searchOptions = useRecoilValue(searchOptionsState);
 
@@ -109,7 +110,6 @@ export default function Document(props: DocumentProps) {
   useEffect(() => {
     resetInsertables(); // Get insertables on first render
   }, [resetInsertables]);
-  
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (props.isLazyAllItems && !latched) {
@@ -144,16 +144,25 @@ export default function Document(props: DocumentProps) {
     return canShow && (((p.type === "PART" || p.type === "PARTSTUDIO") && searchOptions.part) || (p.type === "ASSEMBLY" && searchOptions.asm));
   });
 
-  if (filtered.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
-    return (<></>);
-  }
-
   let searchedInsertables: OnshapeInsertable[] = []
   if (props.searchText !== '') {
     searchedInsertables = insertablesSearch(props.searchText, filtered).map((item) => item.item);
   }
   else {
     searchedInsertables = filtered;
+  }
+
+  useEffect(() => {
+    if (props.searchText !== '') {
+      setExpanded(searchedInsertables.length <= 5);
+    }
+    else {
+      setExpanded(false);
+    }
+  }, [props.searchText]);
+
+  if (filtered.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
+    return (<></>);
   }
 
   if (searchedInsertables.length === 0 && !props.isLazyAllItems && !props.isFavorites) {
