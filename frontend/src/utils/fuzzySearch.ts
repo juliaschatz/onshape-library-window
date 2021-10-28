@@ -6,7 +6,8 @@ import Fuse from 'fuse.js'
 const options = {
   includeScore: true,
   // keys: ['name']
-  threshold: 0.4,
+  threshold: 0.2,
+  ignoreLocation: true,
   keys: ['name', 'insertables.name']
 }
 
@@ -18,7 +19,8 @@ export function search(searchTerm: string, docs: OnshapeDocument[]) {
 
 const insertablesOptions = {
   includeScore: true,
-  threshold: 0.4,
+  threshold: 0.2,
+  ignoreLocation: true,
   keys: ['name']
 }
 

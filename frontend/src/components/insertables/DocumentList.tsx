@@ -59,7 +59,7 @@ export default function DocumentList(props: DocumentListProps) {
     })();
   }, [])
 
-  if (searchText !== '') {
+  if (false && searchText !== '') {
     filteredResults = FuzzySearch(searchText, docs).map((res) => res.item);
   }
   else {
@@ -78,7 +78,7 @@ export default function DocumentList(props: DocumentListProps) {
         spacing={0}
       >
         {/* Favorite Documents */}
-        {!props.admin && <Document isLazyAllItems={false} key={0} doc={favorites} searchText={searchText} isFavorites={true}/>}
+        {!props.admin && searchText === '' && <Document isLazyAllItems={false} key={0} doc={favorites} searchText={searchText} isFavorites={true}/>}
         
 
         {/* Other Documents */}
