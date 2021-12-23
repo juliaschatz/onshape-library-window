@@ -338,14 +338,29 @@ function documentData(req, res) {
         };
         var eMetaPromise = getElementsMetadataRaw(eMetaReq, res).then((metadataResult) => {
           var elementsLeft = metadataResult.items.length;
+          var elementIds = [];
+          var elementPartIdMap = {};
           var decreaseElements = function() {
             elementsLeft--;
             if (elementsLeft === 0) {
+              // Delete parts that no longer exist
+              var stored = db.collection("stored");
+              stored.find({documentId: documentId}).toArray().then((data) => {
+                data.forEach((item) => {
+                  if (!elementIds.includes(item.elementId) || (item.partId && !elementPartIdMap[item.elementId].includes(item.partId))) {
+                    // Missing part
+                    console.log("Deleting:");
+                    console.log(item);
+                    stored.deleteOne(item);
+                  }
+                })
+              });
               res.send(insertable_data);
             }
           };
 
           metadataResult.items.forEach((metaItem) => {
+            elementIds.push(metaItem.elementId);
             if (metaItem.elementType === META.ASSEM || metaItem.elementType === META.PARTSTUDIO) {
               var eConfigReq = req;
               eConfigReq.query = {
@@ -375,105 +390,86 @@ function documentData(req, res) {
 
                 }
                 else if (metaItem.elementType === META.PARTSTUDIO) {
-                  // Part studio: Check each item in studio if it's not configurable
-                  if (configOpts.length > 0 && false) {
-                    var item = {
-                      type: "PARTSTUDIO",
-                      name: elementName,
-                      elementId: metaItem.elementId,
-                      versionId: versionId,
-                      documentId: documentId,
-                      lastVersion: lastVersion(metaItem.elementId),
-                      config: configOpts
-                    };
-                    fetchThumb(item, req, res).then((thumb) => {
-                      item.thumb = thumb;
-                    }).catch(() => {}).finally(() => {
-                      insertable_data.push(item);
+                  elementPartIdMap[metaItem.elementId] = [];
+                  partMetaReq = req;
+                  partMetaReq.query = {
+                    documentId: documentId,
+                    elementId: metaItem.elementId,
+                    versionId: versionId
+                  };
+                  var pMetaPromise = getPartsMetadataRaw(partMetaReq, res).then((itemMetaResult) => {
+                    if (itemMetaResult === undefined) {
                       decreaseElements();
-                    });
-                  }
-                  else {
-
-
-                    partMetaReq = req;
-                    partMetaReq.query = {
-                      documentId: documentId,
-                      elementId: metaItem.elementId,
-                      versionId: versionId
-                    };
-                    var pMetaPromise = getPartsMetadataRaw(partMetaReq, res).then((itemMetaResult) => {
-                      if (itemMetaResult === undefined) {
-                        decreaseElements();
-                        return;
+                      return;
+                    }
+                    var nonCompositeParts = [];
+                    var compositeParts = [];
+                    itemMetaResult.items.forEach((part) => {
+                      var name = getName(part);
+                      if (configOpts.length > 0) {
+                        name = elementName;
                       }
-                      var nonCompositeParts = [];
-                      var compositeParts = [];
-                      itemMetaResult.items.forEach((part) => {
-                        var name = getName(part);
-                        if (configOpts.length > 0) {
-                          name = elementName;
-                        }
+                      var item = {
+                        type: "PART",
+                        name: name,
+                        partId: part.partId,
+                        elementId: metaItem.elementId,
+                        versionId: versionId,
+                        documentId: documentId,
+                        lastVersion: lastVersion(metaItem.elementId, part.partId),
+                        config: configOpts
+                      };
+                      if (part.partType === "composite") {
+                        
+                        compositeParts.push(item);
+                      }
+                      else {
+                        nonCompositeParts.push(item);
+                      }
+                    });
+                    var addParts = [];
+                    if (compositeParts.length > 0) {
+                      addParts = compositeParts;
+                    }
+                    else {
+                      if (nonCompositeParts.length > 10) {
+                        nonCompositeParts = []; // A lot of parts means this is probably parts for an assembly
                         var item = {
-                          type: "PART",
-                          name: name,
-                          partId: part.partId,
+                          type: "PARTSTUDIO",
+                          name: elementName,
                           elementId: metaItem.elementId,
                           versionId: versionId,
                           documentId: documentId,
-                          lastVersion: lastVersion(metaItem.elementId, part.partId),
+                          lastVersion: lastVersion(metaItem.elementId),
                           config: configOpts
                         };
-                        if (part.partType === "composite") {
-                          
-                          compositeParts.push(item);
-                        }
-                        else {
-                          nonCompositeParts.push(item);
-                        }
-                      });
-                      var addParts = [];
-                      if (compositeParts.length > 0) {
-                        addParts = compositeParts;
-                      }
-                      else {
-                        if (nonCompositeParts.length > 10) {
-                          nonCompositeParts = []; // A lot of parts means this is probably parts for an assembly
-                          var item = {
-                            type: "PARTSTUDIO",
-                            name: elementName,
-                            elementId: metaItem.elementId,
-                            versionId: versionId,
-                            documentId: documentId,
-                            lastVersion: lastVersion(metaItem.elementId),
-                            config: configOpts
-                          };
-                          fetchThumb(item, req, res).then((thumb) => {
-                            item.thumb = thumb;
-                          }).catch(() => {}).finally(() => {
-                            insertable_data.push(item);
-                            decreaseElements();
-                          });
-                        }
-                        addParts = nonCompositeParts;
-                      }
-                      var partsLeft = addParts.length;
-                      if (partsLeft === 0) {
-                        decreaseElements();
-                      }
-                      addParts.forEach((item) => {
                         fetchThumb(item, req, res).then((thumb) => {
                           item.thumb = thumb;
                         }).catch(() => {}).finally(() => {
                           insertable_data.push(item);
-                          partsLeft--;
-                          if (partsLeft === 0) {
-                            decreaseElements();
-                          }
+                          decreaseElements();
                         });
+                      }
+                      addParts = nonCompositeParts;
+                    }
+                    var partsLeft = addParts.length;
+                    if (partsLeft === 0) {
+                      decreaseElements();
+                    }
+                    addParts.forEach((item) => {
+                      fetchThumb(item, req, res).then((thumb) => {
+                        item.thumb = thumb;
+                      }).catch(() => {}).finally(() => {
+                        insertable_data.push(item);
+                        elementPartIdMap[metaItem.elementId].push(item.partId);
+                        partsLeft--;
+                        if (partsLeft === 0) {
+                          decreaseElements();
+                        }
                       });
-                    }); // part meta promise
-                  }
+                    });
+                  }); // part meta promise
+                  
                 }
               }); // configuration promise
             }
