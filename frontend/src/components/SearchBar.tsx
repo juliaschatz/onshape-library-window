@@ -16,6 +16,7 @@ import { useRecoilState } from "recoil";
 import { searchOptionsState } from "../utils/atoms";
 import SvgPartIcon from '../icons/SvgPartIcon';
 import SvgAssemblyIcon from '../icons/SvgAssemblyIcon';
+import { isPartStudioContext } from '../utils/api';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -95,8 +96,11 @@ export default function Searchbar(props: SearchbarProps) {
   const handleChange = (event: React.MouseEvent<HTMLElement>, newSetting: string[]) => {
     setMySearchOpts(newSetting);
     let options = { ...searchOptions };
-    options.part = newSetting.includes("part");
+    options.part = newSetting.includes("part") || (!props.isAdmin && isPartStudioContext());
     options.asm = newSetting.includes("asm");
+    if (!props.isAdmin && isPartStudioContext()) {
+      options.asm = false;
+    }
     options.config = newSetting.includes("config");
     setSearchOptions(options);
   }
@@ -123,12 +127,14 @@ export default function Searchbar(props: SearchbarProps) {
             </Grid>}
             <Grid item xs={12}>
               <ToggleButtonGroup value={mySearchOpts} onChange={handleChange} aria-label="search options" size="small">
+                {!props.isAdmin && !isPartStudioContext() && // Don't show type selections in part studios
                 <ToggleButton value="part" aria-label="part" classes={toggleStyles()}>
                   <SvgPartIcon />
-                </ToggleButton>
+                </ToggleButton> }
+                {!props.isAdmin && !isPartStudioContext() && 
                 <ToggleButton value="asm" aria-label="assembly" classes={toggleStyles()}>
                   <SvgAssemblyIcon />
-                </ToggleButton>
+                </ToggleButton> }
                 <ToggleButton value="config" aria-label="configurable only" classes={toggleStyles()}>
                   Configurable Only
                 </ToggleButton>

@@ -7,7 +7,7 @@ import { OnshapeDocument } from '../../utils/models/OnshapeDocument'
 import { OnshapeInsertable } from '../../utils/models/OnshapeInsertable';
 import { getOnshapeInsertables } from '../../utils/apiWrapper';
 import InsertableElement from './InsertableElement';
-import { getAllDocumentInsertables, publishPart } from "../../utils/api";
+import { getAllDocumentInsertables, isPartStudioContext, publishPart } from "../../utils/api";
 import { CircularProgress, Button } from '@material-ui/core';
 import NewReleasesIcon from '@material-ui/icons/NewReleases';
 import SvgFavoriteStrokeIcon from '../../icons/SvgFavoriteStrokeIcon';

@@ -26,6 +26,11 @@ async function post<T>(endpoint: string, data: any): Promise<T> {
   
 }
 
+export function isPartStudioContext(): boolean {
+  const query = new URLSearchParams(window.location.search);
+  return query.get("type") === "partstudio";
+}
+
 export async function insertPart(insertable: OnshapeInsertable, configuration?: string): Promise<boolean> {
   const query = new URLSearchParams(window.location.search);
   const docId = query.get("docId");
@@ -33,24 +38,47 @@ export async function insertPart(insertable: OnshapeInsertable, configuration?: 
   const wvmId = query.get("wvmId");
   const eId = query.get("eId");
 
-  const endpoint = `/api/insert?documentId=${docId}&workspaceId=${wvmId}&elementId=${eId}`;
-  return new Promise<boolean>((resolve, reject) => {
-    post(endpoint, {
-      "documentId": insertable.documentId,
-      "elementId": insertable.elementId,
-      "featureId": "",
-      "isAssembly": insertable.type === "ASSEMBLY",
-      "isWholePartStudio": insertable.type === "PARTSTUDIO",
-      "microversionId": "",
-      "partId": insertable.partId ? insertable.partId : "",
-      "versionId": insertable.versionId,
-      "configuration": configuration ? configuration : ""
-    }).then(() => {
-      resolve(true);
-    }).catch(() => {
-      resolve(false);
+  if (isPartStudioContext()) {
+    // todo properly create feature
+    const endpoint = `/api/derive?documentId=${docId}&workspaceId=${wvmId}&elementId=${eId}`;
+    return new Promise<boolean>((resolve, reject) => {
+      post(endpoint, {
+        "documentId": insertable.documentId,
+        "elementId": insertable.elementId,
+        "featureId": "",
+        "isAssembly": insertable.type === "ASSEMBLY",
+        "isWholePartStudio": insertable.type === "PARTSTUDIO",
+        "microversionId": "",
+        "partId": insertable.partId ? insertable.partId : "",
+        "versionId": insertable.versionId,
+        "configuration": configuration ? configuration : ""
+      }).then(() => {
+        resolve(true);
+      }).catch(() => {
+        resolve(false);
+      });
     });
-  });
+  }
+  else {
+    const endpoint = `/api/insert?documentId=${docId}&workspaceId=${wvmId}&elementId=${eId}`;
+    return new Promise<boolean>((resolve, reject) => {
+      post(endpoint, {
+        "documentId": insertable.documentId,
+        "elementId": insertable.elementId,
+        "featureId": "",
+        "isAssembly": insertable.type === "ASSEMBLY",
+        "isWholePartStudio": insertable.type === "PARTSTUDIO",
+        "microversionId": "",
+        "partId": insertable.partId ? insertable.partId : "",
+        "versionId": insertable.versionId,
+        "configuration": configuration ? configuration : ""
+      }).then(() => {
+        resolve(true);
+      }).catch(() => {
+        resolve(false);
+      });
+    });
+  }
 }
 
 export async function getDocsFromApi(): Promise<OnshapeDocument[]> {
