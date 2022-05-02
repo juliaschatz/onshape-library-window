@@ -113,7 +113,9 @@ function callInsert(req, res) {
       json: true,
       body: req.body,
       headers: {
-        'Authorization': 'Bearer ' + req.user.accessToken
+        'Authorization': 'Bearer ' + req.user.accessToken,
+        'Content-Type': 'application/vnd.onshape.v2+json;charset=UTF-8;qs=0.2',
+        'accept': 'application/vnd.onshape.v2+json;charset=UTF-8;qs=0.2'
       }
     }).catch((data) => {
       console.log("CATCH " + data.statusCode);
@@ -128,6 +130,52 @@ function callInsert(req, res) {
           console.log('Error refreshing token: ', err);
           reject();
         });
+      }
+      else if (data.statusCode === 403) {
+        console.log('Error: ' , JSON.stringify(data, null, 2));
+      } else {
+        console.log('Error: ', data.statusCode);
+        reject(data);
+      }
+    }).then((data) => {
+      res.send(data);
+      resolve(data);
+    });
+  });
+}
+
+function callDerive(req, res) {
+  if (req.query.documentId === undefined || req.query.workspaceId === undefined || req.query.elementId === undefined) {
+    res.status(404).send();
+    return;
+  }
+  var targetUrl = apiUrl + '/api/partstudios/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/features';
+  return new Promise((resolve, reject) => {
+    request.post({
+      uri: targetUrl,
+      json: true,
+      body: req.body,
+      headers: {
+        'Authorization': 'Bearer ' + req.user.accessToken,
+        'Content-Type': 'application/vnd.onshape.v2+json;charset=UTF-8;qs=0.2',
+        'accept': 'application/vnd.onshape.v2+json;charset=UTF-8;qs=0.2'
+      }
+    }).catch((data) => {
+      console.log("CATCH " + data.statusCode);
+      if (data.statusCode === 401) {
+        authentication.refreshOAuthToken(req, res).then(function() {
+          callDerive(req, res).then((data) => {
+            resolve(data);
+          }).catch((data) => {
+            reject(data);
+          });
+        }).catch(function(err) {
+          console.log('Error refreshing token: ', err);
+          reject();
+        });
+      }
+      else if (data.statusCode === 400) {
+        console.log('Error: ' , JSON.stringify(data, null, 2));
       }
       else if (data.statusCode === 403) {
         console.log('Error: ' , JSON.stringify(data, null, 2));
@@ -289,7 +337,8 @@ function fetchThumb(item, req, res) {
   });
 
 }
-
+// Update this variable when the structure of the stored data changes
+var SCHEMA_VERSION = 1;
 function documentData(req, res) {
 
   checkAuth(req.user.id).then(() => {
@@ -300,16 +349,20 @@ function documentData(req, res) {
     var stored = db.collection("stored");
 
     stored.find({documentId: documentId}).toArray().then((visible_items) => {
-      oldVerMap = {};
+      var oldVerMap = {};
+      var oldSchemaMap = {};
       if (visible_items !== undefined && Array.isArray(visible_items)) {
         visible_items.forEach((item) => {
+          var key = "";
           if (item.partId) {
-            oldVerMap[item.elementId + "/" + item.partId] = item.versionId;
+            key = item.elementId + "/" + item.partId;
+            
           }
           else {
-            oldVerMap[item.elementId] = item.versionId;
+            key = item.elementId;
           }
-
+          oldVerMap[key] = item.versionId;
+          oldSchemaMap[key] = item.schemaVersion;
         });
       }
 
@@ -322,6 +375,22 @@ function documentData(req, res) {
           key = elementId;
         }
         return oldVerMap[key];
+      }
+      function lastSchemaVersion(elementId, partId) {
+        var key = "";
+        if (partId) {
+          key = elementId + "/" + partId;
+        }
+        else {
+          key = elementId;
+        }
+        var r = oldSchemaMap[key];
+        if (r === undefined) {
+          return 0;
+        }
+        else {
+          return r;
+        }
       }
 
       versionReq = req;
@@ -336,8 +405,8 @@ function documentData(req, res) {
           documentId: documentId,
           versionId: versionId
         };
-        var eMetaPromise = getElementsMetadataRaw(eMetaReq, res).then((metadataResult) => {
-          var elementsLeft = metadataResult.items.length;
+        var eMetaPromise = getElementsRaw(eMetaReq, res).then((metadataResult) => {
+          var elementsLeft = metadataResult.length;
           var elementIds = [];
           var elementPartIdMap = {};
           var decreaseElements = function() {
@@ -359,26 +428,29 @@ function documentData(req, res) {
             }
           };
 
-          metadataResult.items.forEach((metaItem) => {
-            elementIds.push(metaItem.elementId);
-            if (metaItem.elementType === META.ASSEM || metaItem.elementType === META.PARTSTUDIO) {
+          metadataResult.forEach((metaItem) => {
+            elementIds.push(metaItem.id);
+            if (metaItem.elementType === "ASSEMBLY" || metaItem.elementType === "PARTSTUDIO") {
               var eConfigReq = req;
               eConfigReq.query = {
                 documentId: documentId,
                 versionId: versionId,
-                elementId: metaItem.elementId,
+                elementId: metaItem.id,
               };
               var eConfigPromise = getElementConfigurationRaw(eConfigReq, res).then((configResult) => {
                 var configOpts = reprocessConfigurationDef(configResult);
-                var elementName = getName(metaItem);
-                if (metaItem.elementType === META.ASSEM) {
+                var elementName = metaItem.name;
+                if (metaItem.elementType === "ASSEMBLY") {
                   var item = {
                     type: "ASSEMBLY",
                     name: elementName,
-                    elementId: metaItem.elementId,
+                    elementId: metaItem.id,
                     versionId: versionId,
+                    microversionId: metaItem.microversionId,
                     documentId: documentId,
-                    lastVersion: lastVersion(metaItem.elementId),
+                    lastVersion: lastVersion(metaItem.id),
+                    schemaVersion: SCHEMA_VERSION,
+                    lastSchemaVersion: lastSchemaVersion(metaItem.id),
                     config: configOpts
                   };
                   fetchThumb(item, req, res).then((thumb) => {
@@ -389,12 +461,12 @@ function documentData(req, res) {
                   });
 
                 }
-                else if (metaItem.elementType === META.PARTSTUDIO) {
-                  elementPartIdMap[metaItem.elementId] = [];
+                else if (metaItem.elementType === "PARTSTUDIO") {
+                  elementPartIdMap[metaItem.id] = [];
                   partMetaReq = req;
                   partMetaReq.query = {
                     documentId: documentId,
-                    elementId: metaItem.elementId,
+                    elementId: metaItem.id,
                     versionId: versionId
                   };
                   var pMetaPromise = getPartsMetadataRaw(partMetaReq, res).then((itemMetaResult) => {
@@ -413,10 +485,13 @@ function documentData(req, res) {
                         type: "PART",
                         name: name,
                         partId: part.partId,
-                        elementId: metaItem.elementId,
+                        elementId: metaItem.id,
                         versionId: versionId,
+                        microversionId: metaItem.microversionId,
                         documentId: documentId,
-                        lastVersion: lastVersion(metaItem.elementId, part.partId),
+                        lastVersion: lastVersion(metaItem.id, part.partId),
+                        schemaVersion: SCHEMA_VERSION,
+                        lastSchemaVersion: lastSchemaVersion(metaItem.id, part.partId),
                         config: configOpts
                       };
                       if (part.partType === "composite") {
@@ -437,10 +512,13 @@ function documentData(req, res) {
                         var item = {
                           type: "PARTSTUDIO",
                           name: elementName,
-                          elementId: metaItem.elementId,
+                          elementId: metaItem.id,
                           versionId: versionId,
+                          microversionId: metaItem.microversionId,
                           documentId: documentId,
-                          lastVersion: lastVersion(metaItem.elementId),
+                          lastVersion: lastVersion(metaItem.id),
+                          schemaVersion: SCHEMA_VERSION,
+                          lastSchemaVersion: lastSchemaVersion(metaItem.id),
                           config: configOpts
                         };
                         fetchThumb(item, req, res).then((thumb) => {
@@ -461,7 +539,7 @@ function documentData(req, res) {
                         item.thumb = thumb;
                       }).catch(() => {}).finally(() => {
                         insertable_data.push(item);
-                        elementPartIdMap[metaItem.elementId].push(item.partId);
+                        elementPartIdMap[metaItem.id].push(item.partId);
                         partsLeft--;
                         if (partsLeft === 0) {
                           decreaseElements();
@@ -574,6 +652,7 @@ function getData(req, res) {
 var getVersions = (req, res) => makeAPICall(req, res, '/api/documents/d/' + req.query.documentId + '/versions', request.get);
 //var callInsert = (req, res) => makeAPICall(req, res, '/api/assemblies/d/' + req.query.documentId + '/w/' + req.query.workspaceId + '/e/' + req.query.elementId + '/instances', request.post);
 var getElements = (req, res) => makeAPICall(req, res, '/api/documents/d/' + req.query.documentId + '/v/' + req.query.versionId + '/elements', request.get);
+var getElementsRaw = (req, res) => makeAPICall(req, res, '/api/documents/d/' + req.query.documentId + '/v/' + req.query.versionId + '/elements', request.get, true);
 var getElementsMetadata = (req, res) => makeAPICall(req, res, '/api/metadata/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e', request.get);
 var getPartsMetadata = (req, res) => makeAPICall(req, res, '/api/metadata/d/' + req.query.documentId + '/v/' + req.query.versionId + '/e/' + req.query.elementId + '/p', request.get);
 
@@ -585,6 +664,7 @@ var getElementConfigurationRaw = (req, res) => makeAPICall(req, res, '/api/eleme
 router.get('/versions', getVersions);
 // Insert
 router.post('/insert', callInsert);
+router.post('/derive', callDerive);
 router.get('/elements', getElements);
 // Metadata
 router.get('/elements_metadata', getElementsMetadata);

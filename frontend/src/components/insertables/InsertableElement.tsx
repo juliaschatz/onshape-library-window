@@ -54,14 +54,8 @@ export default function InsertableElement(props: ElementProps) {
     });
 
     setOpen(false);
-    // Collect configuration
-    let configStr = "";
-    for (const key in configOpts) {
-      configStr += `${key}=${(configOpts as any)[key] as string};`;
-    }
-    configStr = configStr.substring(0, configStr.length-1);
     setLoading(true);
-    insertPart(props.insertable, configStr).then((result: boolean) => {
+    insertPart(props.insertable, configOpts).then((result: boolean) => {
       setLoading(false);
     });
   };
@@ -111,7 +105,8 @@ export default function InsertableElement(props: ElementProps) {
           </Grid>
           {props.insertable.thumb && <Grid item sm={1}><img alt="Part Thumbnail" className={classes.image} src={`data:image/png;base64,${props.insertable.thumb}`} /></Grid>}
           <Grid item xs={10}><div><Typography display="inline" style={{wordWrap: "break-word"}} className={classes.title}>{props.insertable.name}</Typography></div></Grid>
-          {props.isAdminElement && !overrideUpdate && adminIsPublished && props.insertable.versionId !== props.insertable.lastVersion && <Grid item sm><Button
+          {props.isAdminElement && !overrideUpdate && adminIsPublished && (props.insertable.versionId !== props.insertable.lastVersion || 
+            props.insertable.schemaVersion > props.insertable.lastSchemaVersion) && <Grid item sm><Button
             variant="contained"
             color="primary"
             size="small"

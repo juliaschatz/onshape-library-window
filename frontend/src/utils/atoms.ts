@@ -1,5 +1,6 @@
 import { atom } from 'recoil'
 import { isPartStudioContext } from './api';
+import { isAdmin } from './apiWrapper';
 
 export const searchTextState = atom({
   key: "searchState",

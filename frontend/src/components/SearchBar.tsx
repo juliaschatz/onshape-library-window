@@ -92,8 +92,9 @@ export default function Searchbar(props: SearchbarProps) {
       };
     }
   }));
+  const styles = toggleStyles();
 
-  const handleChange = (event: React.MouseEvent<HTMLElement>, newSetting: string[]) => {
+  const handleChange = (newSetting: string[]) => {
     setMySearchOpts(newSetting);
     let options = { ...searchOptions };
     options.part = newSetting.includes("part") || (!props.isAdmin && isPartStudioContext());
@@ -102,8 +103,16 @@ export default function Searchbar(props: SearchbarProps) {
       options.asm = false;
     }
     options.config = newSetting.includes("config");
+    if (props.isAdmin) {
+      options.part = true;
+      options.asm = true;
+      options.config = false;
+    }
     setSearchOptions(options);
   }
+  useEffect(() => {
+    handleChange(["part", "asm"]);
+  }, [props.isAdmin]);
 
   return (
     <div >
@@ -125,21 +134,21 @@ export default function Searchbar(props: SearchbarProps) {
                 {props.isAdmin ? "User" : "Admin"}
               </Button>
             </Grid>}
-            <Grid item xs={12}>
-              <ToggleButtonGroup value={mySearchOpts} onChange={handleChange} aria-label="search options" size="small">
-                {!props.isAdmin && !isPartStudioContext() && // Don't show type selections in part studios
-                <ToggleButton value="part" aria-label="part" classes={toggleStyles()}>
+            {!props.isAdmin && <Grid item xs={12}>
+              <ToggleButtonGroup value={mySearchOpts} onChange={(event: React.MouseEvent<HTMLElement>, newSetting: string[]) => {handleChange(newSetting);}} aria-label="search options" size="small">
+                {!isPartStudioContext() && // Don't show type selections in part studios
+                <ToggleButton value="part" aria-label="part" classes={styles}>
                   <SvgPartIcon />
                 </ToggleButton> }
-                {!props.isAdmin && !isPartStudioContext() && 
-                <ToggleButton value="asm" aria-label="assembly" classes={toggleStyles()}>
+                {!isPartStudioContext() && 
+                <ToggleButton value="asm" aria-label="assembly" classes={styles}>
                   <SvgAssemblyIcon />
                 </ToggleButton> }
-                <ToggleButton value="config" aria-label="configurable only" classes={toggleStyles()}>
+                <ToggleButton value="config" aria-label="configurable only" classes={styles}>
                   Configurable Only
                 </ToggleButton>
               </ToggleButtonGroup>
-            </Grid>
+            </Grid>}
           </Grid>
           
         </Toolbar>
