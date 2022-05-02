@@ -129,8 +129,9 @@ export default function Document(props: DocumentProps) {
     event.stopPropagation();
     setIsLoading(true);
     setOverrideUpdate(true);
-    const promises = insertables.filter((p: OnshapeInsertable) => (p.isPublished || (p.isPublished == null && !!p.lastVersion)) && p.versionId !== p.lastVersion).map((p) => {
+    const promises = insertables.filter((p: OnshapeInsertable) => (p.isPublished || (p.isPublished == null && !!p.lastVersion)) && (p.versionId !== p.lastVersion || p.schemaVersion > p.lastSchemaVersion)).map((p) => {
       p.lastVersion = p.versionId;
+      p.lastSchemaVersion = p.schemaVersion;
       return publishPart(p, true);
     });
     Promise.all(promises).then(() => setIsLoading(false));
@@ -185,7 +186,7 @@ export default function Document(props: DocumentProps) {
           <Typography className={classes.heading}>&nbsp;{props.doc.name}&nbsp;&nbsp;&nbsp;</Typography>
           
           {isLoading && <CircularProgress /> }
-          {props.isLazyAllItems && !props.isFavorites && !overrideUpdate && expanded && insertables.filter((p: OnshapeInsertable) => (p.isPublished || (p.isPublished == null && !!p.lastVersion)) && p.versionId !== p.lastVersion).length > 0 && <Button
+          {props.isLazyAllItems && !props.isFavorites && !overrideUpdate && expanded && insertables.filter((p: OnshapeInsertable) => (p.isPublished || (p.isPublished == null && !!p.lastVersion)) && (p.versionId !== p.lastVersion || p.schemaVersion > p.lastSchemaVersion)).length > 0 && <Button
             variant="contained"
             color="primary"
             size="small"

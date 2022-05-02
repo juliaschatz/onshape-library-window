@@ -1,4 +1,6 @@
 import { atom } from 'recoil'
+import { isPartStudioContext } from './api';
+import { isAdmin } from './apiWrapper';
 
 export const searchTextState = atom({
   key: "searchState",
@@ -9,7 +11,7 @@ export const searchOptionsState = atom({
   key: "searchOptions",
   default: {
     part: true,
-    asm: true,
+    asm: !isPartStudioContext(),
     composite: false,
     config: false
   }

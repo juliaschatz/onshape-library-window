@@ -1,9 +1,11 @@
+import internal from 'stream';
 import { Configuration } from './Configuration';
 
 export interface OnshapeInsertable {
     type: "PART" | "ASSEMBLY" | "PARTSTUDIO";
     name: string;
     partId?: string;
+    microversionId?: string;
     elementId: string;
     versionId: string;
     documentId: string;
@@ -14,4 +16,6 @@ export interface OnshapeInsertable {
     thumb?: string;
     config: Configuration[];
     isPublished?: boolean;
+    lastSchemaVersion: number;
+    schemaVersion: number;
 }
