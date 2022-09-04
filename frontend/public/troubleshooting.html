@@ -1,0 +1,49 @@
+<html>
+<head>
+  <title>Troubleshooting</title>
+</head>
+<body>
+<h1>Troubleshooting</h1>
+<p>
+  Most issues occur because of browser privacy settings. 
+  This is because the app exists in an iFrame inside Onshape and tries to access its own cookies, which is a common strategy that trackers use.
+  Disable any privacy extensions such as Adblock, uBlock, Privacy Badger, etc, specifically for mkcad.julias.ch and cad.onshape.com if desired.
+  <br />
+  If you are on an enterprise network, you may need your IT services to allow mkcad.julias.ch through the firewall.
+</p>
+Specific browser info:
+<ul>
+  <li><a href="#firefox">Firefox</a></li>
+  <li><a href="#chrome">Chrome</a></li>
+  <li><a href="#safari">Safari</a></li>
+  <li><a href="#reporting">Nothing Worked</a></li>
+</ul>
+<h2 id="firefox">Firefox</h2>
+<p>
+  <ul>
+    <li>Make sure privacy extensions are disabled, or try using the app in Incognito Mode.</li>
+    <li><a href="https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop#w_what-to-do-if-a-site-seems-broken" target="_blank">Disable tracking protections for mkcad.julias.ch and cad.onshape.com.</a></li>
+    <li>Nuclear option: <a href="https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop#w_custom-enhanced-tracking-protection" target="_blank">Disable all tracking protections.</a></li>
+  </ul>
+</p>
+<h2 id="chrome">Chrome</h2>
+<p>
+  <ul>
+    <li>Make sure privacy extensions are disabled, or try using the app in Incognito Mode.</li>
+    <li>Nuclear option: Disable all tracking protection. Settings -> Privacy and Security -> choose No Protection</li>
+  </ul>
+</p>
+<h2 id="safari">Safari</h2>
+<p>
+  <ul>
+    <li>Make sure privacy extensions are disabled, or try using the app in Incognito Mode.</li>
+    <li><a href="https://support.apple.com/guide/safari/prevent-cross-site-tracking-sfri40732/mac" target="_blank">Disable "Prevent cross-site tracking"</a></li>
+  </ul>
+</p>
+<h2 id="reporting">Nothing Worked</h2>
+<p>
+  File an issue on <a href="https://github.com/juliaschatz/onshape-library-window/issues/new">Github</a> or <a href="https://www.chiefdelphi.com/t/the-mkcad-app/392654">Chief Delphi</a>.
+  Make sure to include your OS, browser (and version), and a description of the issue including what steps you've already tried.
+</p>
+</body>
+</html>
