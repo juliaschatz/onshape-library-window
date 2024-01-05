@@ -1,9 +1,9 @@
 [
   { "id": "92b0b8a2272e065eb151c20c", "name": "Bearings" },
-  { "id": "ea2083d11da013e3ded51232", "name": "COTS Mechanisms" },
   { "id": "57a4e2e4ef5b4fca994e9d55", "name": "COTS Mechanisms - AndyMark" },
   { "id": "d14e42de012cd4285c8fcdba", "name": "COTS Mechanisms - REV" },
   { "id": "f323ec884d0199c0af493725", "name": "COTS Mechanisms - TTB" },
+  { "id": "ea2083d11da013e3ded51232", "name": "COTS Mechanisms - WCP" },
   { "id": "11dea59fcde97bd96bad66d1", "name": "Electronics" },
   { "id": "bf01f7bc3ee2be305acdb76d", "name": "Extrusions + Shafts" },
   { "id": "8d7236e497bf1e271e21fbd2", "name": "Fasteners" },

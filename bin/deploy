@@ -1,4 +1,22 @@
 #!/bin/bash
 
-scp -r backend/* digitalocean:/srv/mkcad_prod/backend/
-scp documents.json digitalocean:/srv/mkcad_prod/
+if [ -z "$1" ];
+then
+  TARGET="mkcad_prod"
+else
+  TARGET="mkcad_$1"
+fi
+
+# Store git status for server state checking
+git status > git_status.txt
+GIT_REV="$(git rev-parse HEAD)"
+echo "HEAD $GIT_REV" >> git_status.txt
+cat git_status.txt
+
+printf " ------------------------ \n"
+printf "Deploying to target $TARGET\n"
+printf " ------------------------ \n\n"
+
+scp -r backend/* digitalocean:/srv/$TARGET/backend/
+scp documents.json digitalocean:/srv/$TARGET/
+scp git_status.txt digitalocean:/srv/$TARGET/
