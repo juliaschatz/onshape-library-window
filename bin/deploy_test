@@ -1,3 +1,4 @@
 #!/bin/bash
 
 scp -r backend/* digitalocean:/srv/mkcad_dev/backend/
+scp documents.json digitalocean:/srv/mkcad_dev/
