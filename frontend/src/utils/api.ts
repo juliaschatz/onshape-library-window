@@ -197,7 +197,6 @@ export async function publishPart(insertable: OnshapeInsertable, publish: boolea
     post(endpoint, {
       "item": insertable,
       "action": publish ? "REPLACE" : "REMOVE",
-      "documentId": insertable.documentId
     }).then((result) => {
       let bust: number = +(localStorage.getItem("bust") ?? "0");
       localStorage.setItem("bust", (bust+1) as any as string);
