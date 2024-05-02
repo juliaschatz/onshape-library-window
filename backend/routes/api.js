@@ -347,6 +347,22 @@ function documentData(req, res) {
     var documentId = req.query.documentId;
 
     var stored = db.collection("stored");
+    var logCollection = db.collection("logs");
+    var updateLogs = function(item, action, result, message) {
+      var logObj = {
+        documentId: item.documentId,
+        elementId: item.elementId,
+        partId: item.partId,
+        type: item.type,
+        userId: req.user.id,
+        result: result,
+        message: message,
+        action: action,
+        source: "purge_old",
+        time: new Date().toISOString(),
+      }
+      return logCollection.insertOne(logObj);
+    }
 
     stored.find({documentId: documentId}).toArray().then((visible_items) => {
       var oldVerMap = {};
@@ -393,7 +409,7 @@ function documentData(req, res) {
         }
       }
 
-      versionReq = req;
+      var versionReq = req;
       versionReq.query = {
         documentId: documentId
       };
@@ -420,7 +436,11 @@ function documentData(req, res) {
                     // Missing part
                     console.log("Deleting:");
                     console.log(item);
-                    stored.deleteOne(item);
+                    stored.deleteOne(item).then((result) => {
+                      updateLogs(item, "REMOVE", "success", result["result"]);
+                    }).catch((err) => {
+                      updateLogs(item, "REMOVE", "failure", err);
+                    });
                   }
                 })
               });
@@ -570,9 +590,6 @@ function documentData(req, res) {
 function saveDocumentData(req, res) {
 
   checkAuth(req.user.id).then(() => {
-    var insertable_data = [];
-    var versionPromisesLeft = documents.length;
-    var documentId = req.body.documentId;
     var newItem = req.body.item;
     var action = req.body.action;
 
@@ -584,19 +601,38 @@ function saveDocumentData(req, res) {
       type: newItem.type
     };
 
-    var callback = function() {
+    var updateLogs = function(result, message) {
+      var logCollection = db.collection("logs");
+      var logObj = {
+        documentId: newItem.documentId,
+        elementId: newItem.elementId,
+        partId: newItem.partId,
+        type: newItem.type,
+        userId: req.user.id,
+        result: result,
+        message: message,
+        action: action,
+        source: "manual_action",
+        time: new Date().toISOString(),
+      }
+      return logCollection.insertOne(logObj);
+    }
+
+    var successCallback = function(result) {
+      updateLogs("success", result["result"]);
       res.status(200).send();
     };
     var err = function(er) {
       console.log(er);
+      updateLogs("failure", er);
       res.status(500).send();
     };
 
     if (action === "REPLACE") {
-      stored.updateOne(filterObj, {$set: newItem}, {upsert: true, multi: false}).then(callback).catch(err);
+      stored.updateOne(filterObj, {$set: newItem}, {upsert: true, multi: false}).then(successCallback).catch(err);
     }
     else if (action === "REMOVE") {
-      stored.deleteOne(filterObj).then(callback).catch(err);
+      stored.deleteOne(filterObj).then(successCallback).catch(err);
     }
     else {
       err("Unrecognized action " + action);
