@@ -1,0 +1,21 @@
+[
+  { "id": "f984b6b78196881d9906e72e", "name": "Bearing Blocks" },
+  { "id": "836cd26e60025118646fa104", "name": "Bearings / Bushings" },
+  { "id": "913294293c53429a987b0e72", "name": "Electronics" },
+  { "id": "360f7941a43b138116bd29b6", "name": "Extrusions and Shafts" },
+  { "id": "77461d97ef7c9d816f0c7351", "name": "Fasteners" },
+  { "id": "6535fdc0dcac8f323c608865", "name": "Game Elements" },
+  { "id": "5661b13bbebaf6fd4bef03aa", "name": "Gearboxes" },
+  { "id": "8ca1bcd2ce433ef31ae559db", "name": "Gears" },
+  { "id": "b0e317da377b0565c96fc265", "name": "Gussets and Brackets" },
+  { "id": "871d0cad06b1c23db69c5d1e", "name": "Hubs" },
+  { "id": "1e490f667f2060acc06d66b0", "name": "Motors" },
+  { "id": "b03982302b9bdf74a4b349e0", "name": "Pneumatics" },
+  { "id": "7348c911d6b36d3b222c1dfe", "name": "Pulleys" },
+  { "id": "990a1de0f0e5dded8f3cec1b", "name": "Sensors" },
+  { "id": "c4dcc85e670893bc8e75e785", "name": "Spacers" },
+  { "id": "a7548e2dd12e2a920f212fae", "name": "Sprockets" },
+  { "id": "698e922b5304f1d6a2b06339", "name": "Swerve" },
+  { "id": "c559dc1b8f5457e1ea9357b1", "name": "Telescopes" },
+  { "id": "8293a9c30ec90f3f3078fde2", "name": "Wheels" }
+]

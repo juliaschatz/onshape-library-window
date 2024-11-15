@@ -17,6 +17,10 @@ Element right panel:
 - URL: `https://mybaseurl.com/application/?type=assem&docId={$documentId}&wvm={$workspaceOrVersion}&wvmId={$workspaceOrVersionId}&eId={$elementId}`
 - Context: Selected Assembly
 
+Element right panel (Derive): 
+- URL: `https://mybaseurl.com/application/?type=partstudio&docId={$documentId}&wvm={$workspaceOrVersion}&wvmId={$workspaceOrVersionId}&eId={$elementId}`
+- Context: Selected Assembly
+
 ## Environment
 Place the following in a file named .env in the working directory of the app.
 ```
@@ -34,6 +38,7 @@ CERT=<certificate location>/fullchain.pem
 SESSION_SECRET=<any simple string>
 ADMIN_TEAM=<onshape team ID, can be found in URL on team page in account settings>
 MONGODB_URI=mongodb://<mongodb ip/url:port>/?poolSize=20&writeConcern=majority
+MONGODB_DB=insertables
 
 REDIS_HOST=<redis ip/url>
 REDIS_PORT=<redis port>
