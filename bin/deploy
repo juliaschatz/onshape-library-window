@@ -4,7 +4,14 @@ if [ -z "$1" ];
 then
   TARGET="mkcad_prod"
 else
-  TARGET="mkcad_$1"
+  TARGET="$1"
+fi
+
+if [ -z "$2" ];
+then
+  DOCS="mkcad"
+else
+  DOCS="$2"
 fi
 
 # Store git status for server state checking
@@ -18,5 +25,7 @@ printf "Deploying to target $TARGET\n"
 printf " ------------------------ \n\n"
 
 scp -r backend/* digitalocean:/srv/$TARGET/backend/
-scp documents.json digitalocean:/srv/$TARGET/
+scp documents_$DOCS.json digitalocean:/srv/$TARGET/documents.json
 scp git_status.txt digitalocean:/srv/$TARGET/
+scp .env.$TARGET digitalocean:/srv/$TARGET/.env
+scp bin/www digitalocean:/srv/$TARGET/bin/

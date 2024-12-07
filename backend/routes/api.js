@@ -24,7 +24,7 @@ const mongo = new MongoClient(mongouri, {
 var db;
 mongo.connect().then(() => {
   console.log("MongoDB Connected");
-  db = mongo.db("insertables");
+  db = mongo.db(process.env.MONGODB_DB);
 });
 
 if (process.env.API_URL) {

@@ -4,7 +4,9 @@
   { "id": "d14e42de012cd4285c8fcdba", "name": "COTS Mechanisms - REV" },
   { "id": "f323ec884d0199c0af493725", "name": "COTS Mechanisms - TTB" },
   { "id": "ea2083d11da013e3ded51232", "name": "COTS Mechanisms - WCP" },
-  { "id": "11dea59fcde97bd96bad66d1", "name": "Electronics" },
+  { "id": "913294293c53429a987b0e72", "name": "Electronics" },
+  { "id": "1e490f667f2060acc06d66b0", "name": "Electronics - Motors" },
+  { "id": "990a1de0f0e5dded8f3cec1b", "name": "Electronics - Sensors" },
   { "id": "bf01f7bc3ee2be305acdb76d", "name": "Extrusions + Shafts" },
   { "id": "8d7236e497bf1e271e21fbd2", "name": "Fasteners" },
   { "id": "4506675fee630d7eab89d419", "name": "Featurescript" },
@@ -14,12 +16,10 @@
   { "id": "c2a381dccb443d1ba020579d", "name": "Gussets + Brackets" },
   { "id": "264a272835dc33c2301ab854", "name": "Hubs" },
   { "id": "3b1327a7833c100083f0c653", "name": "KrayonCAD" },
-  { "id": "2979144bb1e87ddd1747e172", "name": "Motors" },
   { "id": "a0b589f74b21e8886d697efc", "name": "Pulleys" },
   { "id": "baeab27eca5a2da03d2940bf", "name": "Pneumatics" },
   { "id": "9dfa04979f86ad20d2148621", "name": "Spacers + Hubs" },
   { "id": "2cad51ee956f732494213c6e", "name": "Swerve" },
-  { "id": "e83eca3cba69ccda678d5a93", "name": "Sensors" },
   { "id": "ce30248c20c1959e634360bc", "name": "Sprockets" },
   { "id": "a94a3f196b6166e347eaf907", "name": "Wheels" }
 ]
