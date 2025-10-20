@@ -8,6 +8,7 @@ import { isAdmin } from "./utils/apiWrapper";
 import { RecoilRoot } from "recoil";
 
 import ReactGA from 'react-ga';
+import AnnouncementBanner from "./components/Banner";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,13 +54,17 @@ function App() {
   
 
   return (
-    <RecoilRoot >
-    <div className={classes.root}>
-      <GlobalCss />
-      <SearchBar isAdmin={isAdminMode} setAdmin={setIsAdminMode} showAdmin={showAdmin} />
-      {<DocumentList admin={isAdminMode} />}
-      {/*isAdmin && <DocumentList admin={true} />*/}
-    </div>
+    <RecoilRoot>
+      <div className={classes.root}>
+        <GlobalCss />
+        <AnnouncementBanner
+          message={<>The MKCad app is being replaced by FRCDesignApp before December</>}
+          action={<a href="https://frcdesign.org" target="_blank" rel="noopener noreferrer">Learn More</a>}
+          dismissible={false}
+        />
+        <SearchBar isAdmin={isAdminMode} setAdmin={setIsAdminMode} showAdmin={showAdmin} />
+        <DocumentList admin={isAdminMode} />
+      </div>
     </RecoilRoot>
   );
 }
