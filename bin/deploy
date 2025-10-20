@@ -2,7 +2,7 @@
 
 if [ -z "$1" ];
 then
-  TARGET="mkcad_prod"
+  TARGET="mkcad_dev"
 else
   TARGET="$1"
 fi

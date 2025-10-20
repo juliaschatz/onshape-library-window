@@ -54,7 +54,19 @@ export default function QuantityField(props: FieldProps) {
       setErrorState(false);
     }
     catch (err) {
-      setHelperText(err.toString());
+      let msg = "Unknown error";
+      if (err instanceof Error) {
+        msg = err.message;
+      } else if (typeof err === "string") {
+        msg = err;
+      } else {
+        try {
+          msg = JSON.stringify(err);
+        } catch {
+          msg = String(err);
+        }
+      }
+      setHelperText(msg);
       setErrorState(true);
     }
   };
