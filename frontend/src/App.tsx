@@ -58,8 +58,15 @@ function App() {
       <div className={classes.root}>
         <GlobalCss />
         <AnnouncementBanner
-          message={<>The MKCad app is being replaced by FRCDesignApp before December</>}
-          action={<a href="https://frcdesign.org" target="_blank" rel="noopener noreferrer">Learn More</a>}
+          message={<>Notice: MKCad is changing soon!</>}
+          learnMoreLabel="Learn more"
+          hideDetailsLabel="Hide"
+          details={
+            <>
+              <p>MKCad will be swapped out for a new interface and library for the 2026 season. This change will happen automatically with no action required from you.</p>
+              <p>For more in depth information on the new interface and library, please refer to the <a href="/changelog">ChiefDelphi Post</a>.</p>
+            </>
+          }
           dismissible={false}
         />
         <SearchBar isAdmin={isAdminMode} setAdmin={setIsAdminMode} showAdmin={showAdmin} />
