@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { SvgIcon } from "@material-ui/core";
 
-const fillColor: string = "#4CAE4F";
+const fillColor: string = "#f50057";
 const strokeColor: string = "#000";
 const invisColor: string = "#0000";
 

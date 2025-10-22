@@ -61,7 +61,6 @@
   "proxy": "https://mkcad.julias.ch/",
   "devDependencies": {
     "@svgr/core": "^5.5.0",
-    "@types/minimatch": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
     "eslint-config-react-app": "^6.0.0",
