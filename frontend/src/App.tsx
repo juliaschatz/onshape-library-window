@@ -63,8 +63,8 @@ function App() {
           hideDetailsLabel="Hide"
           details={
             <>
-              <p>MKCad will be swapped out for a new interface and library for the 2026 season. This change will happen automatically with no action required from you.</p>
-              <p>For more in depth information on the new interface and library, please refer to the <a href="https://www.chiefdelphi.com/t/introducing-the-new-frcdesignapp/507335" target="_blank" rel="noopener noreferrer">ChiefDelphi Post</a>.</p>
+              <p>The MKCad app will be replaced with a new interface and library for the 2026 season. This change will happen automatically with no action required from you.</p>
+              <p>For more information on the new interface and library, please refer to the <a href="https://www.chiefdelphi.com/t/introducing-the-new-frcdesignapp/507335" target="_blank" rel="noopener noreferrer">ChiefDelphi Post</a>.</p>
             </>
           }
           dismissible={false}

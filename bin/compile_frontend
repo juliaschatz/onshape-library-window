@@ -1,9 +1,16 @@
 #!/bin/bash
 
+if [ -z "$1" ];
+then
+  TARGET="mkcad_prod"
+else
+  TARGET="$1"
+fi
+
 echo "Starting frontend build"
 
 cd frontend
-cp ../.env .
+cp ../.env.$TARGET ./.env
 yarn build
 rm -r ../backend/public
 mkdir -p ../backend/public/application

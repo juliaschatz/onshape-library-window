@@ -32,9 +32,9 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "stretch",
       gap: 0,
       borderBottom: `1px solid ${theme.palette.divider}`,
-      fontFamily: `'Roboto', ${theme.typography.fontFamily}`,
-      fontSize: "1rem",
-      fontWeight: 400,
+      fontFamily: `${theme.typography.fontFamily}`,
+      fontSize: theme.typography.pxToRem(15),
+      fontWeight: theme.typography.fontWeightRegular, 
       borderRadius: "5px",
     },
     surface: {
