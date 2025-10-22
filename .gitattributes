@@ -1,0 +1,15 @@
+*          text=auto eol=lf
+
+# scripts & config that must be LF
+*.sh       text eol=lf
+bin/*      text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.json     text eol=lf
+*.ts       text eol=lf
+*.js       text eol=lf
+
+# binaries
+*.png      binary
+*.jpg      binary
+*.ico      binary

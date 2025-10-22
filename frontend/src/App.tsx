@@ -8,6 +8,7 @@ import { isAdmin } from "./utils/apiWrapper";
 import { RecoilRoot } from "recoil";
 
 import ReactGA from 'react-ga';
+import AnnouncementBanner from "./components/Banner";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,13 +54,24 @@ function App() {
   
 
   return (
-    <RecoilRoot >
-    <div className={classes.root}>
-      <GlobalCss />
-      <SearchBar isAdmin={isAdminMode} setAdmin={setIsAdminMode} showAdmin={showAdmin} />
-      {<DocumentList admin={isAdminMode} />}
-      {/*isAdmin && <DocumentList admin={true} />*/}
-    </div>
+    <RecoilRoot>
+      <div className={classes.root}>
+        <GlobalCss />
+        <AnnouncementBanner
+          message={<>Notice: MKCad is changing soon!</>}
+          learnMoreLabel="Learn more"
+          hideDetailsLabel="Hide"
+          details={
+            <>
+              <p>MKCad will be swapped out for a new interface and library for the 2026 season. This change will happen automatically with no action required from you.</p>
+              <p>For more in depth information on the new interface and library, please refer to the <a href="https://www.chiefdelphi.com/t/introducing-the-new-frcdesignapp/507335" target="_blank" rel="noopener noreferrer">ChiefDelphi Post</a>.</p>
+            </>
+          }
+          dismissible={false}
+        />
+        <SearchBar isAdmin={isAdminMode} setAdmin={setIsAdminMode} showAdmin={showAdmin} />
+        <DocumentList admin={isAdminMode} />
+      </div>
     </RecoilRoot>
   );
 }

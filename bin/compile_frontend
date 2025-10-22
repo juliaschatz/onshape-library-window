@@ -1,13 +1,74 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 echo "Starting frontend build"
 
-cd frontend
-cp ../.env .
-yarn build
-rm -r ../backend/public
-mkdir -p ../backend/public/application
-cp -r build/* ../backend/public
-mkdir ../backend/public/application
-mv ../backend/public/index.html ../backend/public/application/
+# Resolve paths relative to this script, no matter where it's run from
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+FRONTEND_DIR="$ROOT_DIR/frontend"
+BACKEND_PUBLIC="$ROOT_DIR/backend/public"
+APP_DIR="$BACKEND_PUBLIC/application"
+
+echo "Repo root: $ROOT_DIR"
+echo "Frontend : $FRONTEND_DIR"
+
+# Show tool versions (helps debug PATH issues between shells)
+NODE_VER="$(node -v 2>/dev/null || echo 'node-not-found')"
+YARN_VER="$(yarn -v 2>/dev/null || echo 'yarn-not-found')"
+echo "Node     : $NODE_VER"
+echo "Yarn     : $YARN_VER"
+
+# Optional: copy .env from repo root into frontend if it exists
+if [[ -f "$ROOT_DIR/.env" ]]; then
+  cp "$ROOT_DIR/.env" "$FRONTEND_DIR/.env"
+fi
+
+# Decide if we need the OpenSSL legacy provider (Node >= 17)
+NEED_LEGACY_OPENSSL=0
+if [[ "$NODE_VER" =~ ^v([0-9]+) ]]; then
+  NODE_MAJOR="${BASH_REMATCH[1]}"
+  if (( NODE_MAJOR >= 17 )); then
+    NEED_LEGACY_OPENSSL=1
+  fi
+fi
+
+# Build the frontend
+echo "Building in $FRONTEND_DIR"
+pushd "$FRONTEND_DIR" >/dev/null
+
+# Install deps
+yarn install --frozen-lockfile || yarn install
+
+# Run the build (inject legacy OpenSSL only when needed)
+if (( NEED_LEGACY_OPENSSL == 1 )); then
+  echo "Using OpenSSL legacy provider for Node $NODE_VER"
+  NODE_OPTIONS="${NODE_OPTIONS-} --openssl-legacy-provider" yarn build
+else
+  yarn build
+fi
+
+popd >/dev/null
+
+# Reset backend public dir and move artifacts
+echo "Preparing $BACKEND_PUBLIC"
+rm -rf "$BACKEND_PUBLIC"
+mkdir -p "$BACKEND_PUBLIC" "$APP_DIR"
+
+# Copy everything from frontend build to backend/public
+if [[ -d "$FRONTEND_DIR/build" ]]; then
+  # Avoid cp errors if the build folder is empty
+  shopt -s nullglob
+  cp -r "$FRONTEND_DIR"/build/* "$BACKEND_PUBLIC"/
+  shopt -u nullglob
+else
+  echo "ERROR: Build output not found at $FRONTEND_DIR/build"
+  exit 1
+fi
+
+# Move index.html into /application
+if [[ -f "$BACKEND_PUBLIC/index.html" ]]; then
+  mv "$BACKEND_PUBLIC/index.html" "$APP_DIR/"
+fi
+
 echo "Completed moving files"
